@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Folder, Tag, ChevronRight, ChevronDown, Plus, 
-  Menu, X
+  Menu, ArrowLeftToLine
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import {
@@ -146,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick }) =
       <div className="sidebar-header">
         <h2 className="app-title">FastClickApp</h2>
         <button className="toggle-btn" onClick={toggleSidebar}>
-          <X size={20} />
+          <ArrowLeftToLine size={20} />
         </button>
       </div>
 

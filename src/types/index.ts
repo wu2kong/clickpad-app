@@ -39,7 +39,7 @@ export interface Tag {
   createdAt: number;
 }
 
-export type ViewMode = 'list' | 'grid';
+export type ViewMode = 'list' | 'grid' | 'gallery';
 
 export interface FilterState {
   selectedCategoryId: string | null;

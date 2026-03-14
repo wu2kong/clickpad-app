@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   LayoutGrid, List, Search, Play, 
-  Edit2, Trash2, ExternalLink, Terminal, AlertTriangle, GripVertical
+  Edit2, Trash2, ExternalLink, Terminal, AlertTriangle, GripVertical, LayoutPanelLeft
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import type { ClickAction } from '../types';
@@ -114,6 +114,121 @@ const SortableActionCard: React.FC<SortableActionCardProps> = ({
         </div>
       </div>
     </div>
+  );
+};
+
+interface ContextMenuProps {
+  x: number;
+  y: number;
+  onExecute: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onClose: () => void;
+}
+
+const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, onExecute, onEdit, onDelete, onClose }) => {
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [onClose]);
+
+  return (
+    <div
+      ref={menuRef}
+      className="context-menu"
+      style={{ left: x, top: y }}
+    >
+      <button onClick={() => { onExecute(); onClose(); }} className="menu-item execute">
+        <Play size={14} />
+        <span>运行</span>
+      </button>
+      <button onClick={() => { onEdit(); onClose(); }} className="menu-item edit">
+        <Edit2 size={14} />
+        <span>编辑</span>
+      </button>
+      <button onClick={() => { onDelete(); onClose(); }} className="menu-item delete">
+        <Trash2 size={14} />
+        <span>删除</span>
+      </button>
+    </div>
+  );
+};
+
+interface GalleryCardProps {
+  action: ClickAction;
+  onEdit: (action: ClickAction) => void;
+  onDelete: (action: ClickAction) => void;
+  onExecute: (action: ClickAction) => void;
+}
+
+const GalleryCard: React.FC<GalleryCardProps> = ({
+  action,
+  onEdit,
+  onDelete,
+  onExecute,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: action.id });
+
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (!contextMenu && e.button === 0) {
+      onExecute(action);
+    }
+  };
+
+  return (
+    <>
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="gallery-card"
+        onClick={handleClick}
+        onContextMenu={handleContextMenu}
+        {...attributes}
+        {...listeners}
+      >
+        <div className="gallery-icon">
+          {getActionIcon(action.action.type)}
+        </div>
+        <div className="gallery-name">{action.name}</div>
+      </div>
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onExecute={() => onExecute(action)}
+          onEdit={() => onEdit(action)}
+          onDelete={() => onDelete(action)}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
+    </>
   );
 };
 
@@ -251,6 +366,42 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
       );
     }
 
+    if (viewMode === 'gallery') {
+      if (canDragSort) {
+        return (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={filteredActions.map((a) => a.id)}
+              strategy={horizontalListSortingStrategy}
+            >
+              {filteredActions.map((action) => (
+                <GalleryCard
+                  key={action.id}
+                  action={action}
+                  onEdit={onEdit}
+                  onDelete={(a) => setDeleteConfirm({ isOpen: true, action: a })}
+                  onExecute={handleExecute}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+        );
+      }
+      return filteredActions.map((action) => (
+        <GalleryCard
+          key={action.id}
+          action={action}
+          onEdit={onEdit}
+          onDelete={(a) => setDeleteConfirm({ isOpen: true, action: a })}
+          onExecute={handleExecute}
+        />
+      ));
+    }
+
     if (canDragSort) {
       return (
         <DndContext
@@ -285,16 +436,22 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
         </div>
         <div className="view-toggle">
           <button
-            className={viewMode === 'grid' ? 'active' : ''}
-            onClick={() => setViewMode('grid')}
-          >
-            <LayoutGrid size={18} />
-          </button>
-          <button
             className={viewMode === 'list' ? 'active' : ''}
             onClick={() => setViewMode('list')}
           >
             <List size={18} />
+          </button>
+          <button
+            className={viewMode === 'grid' ? 'active' : ''}
+            onClick={() => setViewMode('grid')}
+          >
+            <LayoutPanelLeft size={18} />
+          </button>
+          <button
+            className={viewMode === 'gallery' ? 'active' : ''}
+            onClick={() => setViewMode('gallery')}
+          >
+            <LayoutGrid size={18} />
           </button>
         </div>
       </div>
@@ -393,7 +550,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
           color: #374151;
         }
         .content {
-          flex: 1;
+          // flex: 1;
           overflow-y: auto;
           padding: 24px;
         }
@@ -406,6 +563,12 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
           display: flex;
           flex-direction: column;
           gap: 12px;
+        }
+        .content.gallery {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+          gap: 12px;
+          padding: 16px;
         }
         .empty-state {
           display: flex;
@@ -636,6 +799,89 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
         }
         .btn-delete:hover {
           background: #b91c1c;
+        }
+        .gallery-card {
+          background: #ffffff;
+          border-radius: 10px;
+          padding: 16px 12px;
+          border: 1px solid #e5e7eb;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          transition: all 0.15s;
+          min-height: 100px;
+        }
+        .gallery-card:hover {
+          border-color: #d1d5db;
+          box-shadow: 0 2px 4px -1px rgba(0,0,0,0.1);
+        }
+        .gallery-card:active {
+          cursor: grabbing;
+        }
+        .gallery-icon {
+          width: 48px;
+          height: 48px;
+          background: #eff6ff;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #2563eb;
+        }
+        .gallery-icon svg {
+          width: 24px;
+          height: 24px;
+        }
+        .gallery-name {
+          font-size: 12px;
+          font-weight: 500;
+          color: #374151;
+          text-align: center;
+          line-height: 1.3;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          word-break: break-word;
+        }
+        .context-menu {
+          position: fixed;
+          background: #ffffff;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          padding: 4px 0;
+          z-index: 3000;
+          min-width: 120px;
+        }
+        .context-menu .menu-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+          padding: 8px 12px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          font-size: 13px;
+          color: #374151;
+          transition: all 0.15s;
+        }
+        .context-menu .menu-item:hover {
+          background: #f3f4f6;
+        }
+        .context-menu .menu-item.execute:hover {
+          background: #dcfce7;
+          color: #16a34a;
+        }
+        .context-menu .menu-item.edit:hover {
+          background: #eff6ff;
+          color: #2563eb;
+        }
+        .context-menu .menu-item.delete:hover {
+          background: #fee2e2;
+          color: #dc2626;
         }
       `}</style>
     </div>
