@@ -112,7 +112,7 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{editAction ? '编辑小程序' : '添加小程序1'}</h2>
+          <h2>{editAction ? '编辑小程序' : '添加小程序'}</h2>
           <button className="close-btn" onClick={onClose}>
             <X size={20} />
           </button>

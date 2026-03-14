@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   LayoutGrid, List, Search, Play, 
-  Edit2, Trash2, ExternalLink, Terminal
+  Edit2, Trash2, ExternalLink, Terminal, AlertTriangle
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import type { ClickAction } from '../types';
@@ -30,6 +30,11 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
     incrementExecutionCount,
     deleteClickAction,
   } = useAppStore();
+
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; action: ClickAction | null }>({
+    isOpen: false,
+    action: null,
+  });
 
   const filteredActions = getFilteredActions();
 
@@ -112,11 +117,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
                       </button>
                       <button
                         className="delete-btn"
-                        onClick={() => {
-                          if (confirm('确定要删除这个小程序吗？')) {
-                            deleteClickAction(action.id);
-                          }
-                        }}
+                        onClick={() => setDeleteConfirm({ isOpen: true, action })}
                         title="删除"
                       >
                         <Trash2 size={16} />
@@ -138,7 +139,36 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
         )}
       </div>
 
-      <style>{`
+      {deleteConfirm.isOpen && deleteConfirm.action && (
+          <div className="delete-modal-overlay" onClick={() => setDeleteConfirm({ isOpen: false, action: null })}>
+            <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="delete-modal-icon">
+                <AlertTriangle size={32} />
+              </div>
+              <h3>确认删除</h3>
+              <p>确定要删除 "{deleteConfirm.action.name}" 吗？此操作无法撤销。</p>
+              <div className="delete-modal-actions">
+                <button
+                  className="btn-cancel"
+                  onClick={() => setDeleteConfirm({ isOpen: false, action: null })}
+                >
+                  取消
+                </button>
+                <button
+                  className="btn-delete"
+                  onClick={() => {
+                    deleteClickAction(deleteConfirm.action!.id);
+                    setDeleteConfirm({ isOpen: false, action: null });
+                  }}
+                >
+                  删除
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <style>{`
         .action-list-container {
           flex: 1;
           display: flex;
@@ -348,6 +378,77 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
         .stats {
           margin-left: auto;
           flex-shrink: 0;
+        }
+        .delete-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2000;
+        }
+        .delete-modal {
+          background: #ffffff;
+          border-radius: 12px;
+          padding: 24px;
+          width: 360px;
+          text-align: center;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .delete-modal-icon {
+          width: 56px;
+          height: 56px;
+          background: #fef2f2;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 16px;
+          color: #dc2626;
+        }
+        .delete-modal h3 {
+          margin: 0 0 8px;
+          font-size: 18px;
+          font-weight: 600;
+          color: #111827;
+        }
+        .delete-modal p {
+          margin: 0 0 24px;
+          font-size: 14px;
+          color: #6b7280;
+        }
+        .delete-modal-actions {
+          display: flex;
+          gap: 12px;
+          justify-content: center;
+        }
+        .delete-modal-actions button {
+          padding: 10px 20px;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .btn-cancel {
+          background: #f3f4f6;
+          border: none;
+          color: #374151;
+        }
+        .btn-cancel:hover {
+          background: #e5e7eb;
+        }
+        .btn-delete {
+          background: #dc2626;
+          border: none;
+          color: #ffffff;
+        }
+        .btn-delete:hover {
+          background: #b91c1c;
         }
       `}</style>
     </div>
