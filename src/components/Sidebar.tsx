@@ -176,6 +176,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick }) =
                     setSelectedTag(null);
                   }}
                 >
+                  <span style={{ width: '3px' }}></span>
                   <span>全部</span>
                 </div>
                 {sortedCategories.map((category) => (
@@ -234,6 +235,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick }) =
                         style={{ paddingLeft: `${16 + level * 16}px` }}
                         onClick={() => setSelectedTag(tag.id)}
                       >
+                        <span className="drag-indicator" />
+                        <span
+                          className="tag-dot"
+                          style={{ backgroundColor: tag.color }}
+                        />
+                        <span className="item-name">{tag.name}</span>
                         {hasChildren && (
                           <span
                             className="expand-icon"
@@ -245,12 +252,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick }) =
                             {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                           </span>
                         )}
-                        <span className="drag-indicator" />
-                        <span 
-                          className="tag-dot"
-                          style={{ backgroundColor: tag.color }}
-                        />
-                        <span className="item-name">{tag.name}</span>
                         <span className="count">{getTagStats(tag.id)}</span>
                       </div>
                     </SortableItem>
@@ -360,7 +361,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick }) =
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 8px 12px;
+          padding: 8px 10px;
           border-radius: 6px;
           cursor: pointer;
           font-size: 14px;
@@ -382,7 +383,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick }) =
           cursor: grabbing;
         }
         .drag-indicator {
-          width: 12px;
+          width: 2px;
           height: 12px;
           flex-shrink: 0;
           opacity: 0;
