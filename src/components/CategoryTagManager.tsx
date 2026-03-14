@@ -210,6 +210,15 @@ export const CategoryTagManager: React.FC<CategoryTagManagerProps> = ({
   const renderTagList = () => {
     const tagHierarchy = getTagHierarchy();
     
+    const isTagVisible = (tagId: string): boolean => {
+      const tag = tags.find((t) => t.id === tagId);
+      if (!tag || !tag.parentId) return true;
+      if (!expandedTags.has(tag.parentId)) return false;
+      return isTagVisible(tag.parentId);
+    };
+
+    const visibleTagHierarchy = tagHierarchy.filter(({ tag }) => isTagVisible(tag.id));
+    
     return (
       <div className="item-list">
         {tags.length === 0 ? (
@@ -221,7 +230,7 @@ export const CategoryTagManager: React.FC<CategoryTagManagerProps> = ({
             </button>
           </div>
         ) : (
-          tagHierarchy.map(({ tag, level }) => {
+          visibleTagHierarchy.map(({ tag, level }) => {
             const hasChildren = tags.some((t) => t.parentId === tag.id);
             const isExpanded = expandedTags.has(tag.id);
             
@@ -231,7 +240,10 @@ export const CategoryTagManager: React.FC<CategoryTagManagerProps> = ({
                 className="list-item tag-item"
                 style={{ paddingLeft: `${12 + level * 20}px` }}
               >
-                <div className="item-info">
+                <div 
+                  className="item-info"
+                  onDoubleClick={() => hasChildren && toggleTagExpand(tag.id)}
+                >
                   {hasChildren && (
                     <button
                       className="expand-btn"

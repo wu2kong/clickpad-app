@@ -73,6 +73,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick }) =
 
   const [expandedTags, setExpandedTags] = useState<Set<string>>(new Set());
   const tagHierarchy = getTagHierarchy();
+  const allTags = tags;
+
+  const isTagVisible = (tagId: string): boolean => {
+    const tag = allTags.find((t) => t.id === tagId);
+    if (!tag || !tag.parentId) return true;
+    if (!expandedTags.has(tag.parentId)) return false;
+    return isTagVisible(tag.parentId);
+  };
+
+  const visibleTagHierarchy = tagHierarchy.filter(({ tag }) => isTagVisible(tag.id));
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -220,11 +230,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick }) =
             onDragEnd={handleTagDragEnd}
           >
             <SortableContext
-              items={tagHierarchy.map(({ tag }) => tag.id)}
+              items={visibleTagHierarchy.map(({ tag }) => tag.id)}
               strategy={verticalListSortingStrategy}
             >
               <div className="section-items">
-                {tagHierarchy.map(({ tag, level }) => {
+                {visibleTagHierarchy.map(({ tag, level }) => {
                   const hasChildren = tags.some((t) => t.parentId === tag.id);
                   const isExpanded = expandedTags.has(tag.id);
                   
@@ -234,6 +244,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick }) =
                         className={`item sortable-item tag-item ${selectedTagId === tag.id ? 'active' : ''}`}
                         style={{ paddingLeft: `${16 + level * 16}px` }}
                         onClick={() => setSelectedTag(tag.id)}
+                        onDoubleClick={() => hasChildren && toggleTagExpand(tag.id)}
                       >
                         <span className="drag-indicator" />
                         <span
