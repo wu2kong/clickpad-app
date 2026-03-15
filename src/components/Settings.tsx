@@ -331,7 +331,7 @@ export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
     <div className="settings-section">
       <div className="about-header">
         <div className="app-logo">⚡</div>
-        <h2 className="app-name">FastClickApp</h2>
+        <h2 className="app-name">ClickPad</h2>
         <p className="app-version">版本 1.0.0</p>
       </div>
 

@@ -1,4 +1,4 @@
-# FastClickApp 项目初始化完成
+# ClickPad 项目初始化完成
 
 ## 项目结构
 

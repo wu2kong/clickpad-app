@@ -357,11 +357,11 @@ fn main() {
             {
                 use tauri::menu::{Menu, MenuItem, Submenu, PredefinedMenuItem};
                 
-                // App menu (FastClickApp)
+                // App menu (ClickPad)
                 let settings_item = MenuItem::with_id(app, "settings", "设置...", true, None::<&str>)?;
                 let app_menu = Submenu::with_items(
                     app,
-                    "FastClickApp",
+                    "ClickPad",
                     true,
                     &[
                         &PredefinedMenuItem::about(app, None, None)?,

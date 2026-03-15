@@ -1,4 +1,4 @@
-# FastClickApp
+# ClickPad
 
 一款轻量级跨平台桌面应用，用于快速管理和执行自定义小程序（ClickAction）。
 

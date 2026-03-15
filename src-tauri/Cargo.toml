@@ -1,5 +1,5 @@
 [package]
-name = "fastclick-app"
+name = "clickpad"
 version = "0.1.0"
 description = "快速执行小程序的桌面应用"
 authors = ["lihao317@foxmail.com"]
