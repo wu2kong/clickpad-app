@@ -3,6 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 use tauri_plugin_shell::ShellExt;
+use tauri::Emitter;
 use std::path::PathBuf;
 use std::fs;
 
@@ -350,6 +351,82 @@ fn main() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .setup(|app| {
+            #[cfg(target_os = "macos")]
+            {
+                use tauri::menu::{Menu, MenuItem, Submenu, PredefinedMenuItem};
+                
+                // App menu (FastClickApp)
+                let settings_item = MenuItem::with_id(app, "settings", "设置...", true, None::<&str>)?;
+                let app_menu = Submenu::with_items(
+                    app,
+                    "FastClickApp",
+                    true,
+                    &[
+                        &PredefinedMenuItem::about(app, None, None)?,
+                        &PredefinedMenuItem::separator(app)?,
+                        &settings_item,
+                        &PredefinedMenuItem::separator(app)?,
+                        &PredefinedMenuItem::services(app, None)?,
+                        &PredefinedMenuItem::separator(app)?,
+                        &PredefinedMenuItem::hide(app, None)?,
+                        &PredefinedMenuItem::hide_others(app, None)?,
+                        &PredefinedMenuItem::separator(app)?,
+                        &PredefinedMenuItem::quit(app, None)?,
+                    ],
+                )?;
+                
+                // Edit menu
+                let edit_menu = Submenu::with_items(
+                    app,
+                    "编辑",
+                    true,
+                    &[
+                        &PredefinedMenuItem::undo(app, None)?,
+                        &PredefinedMenuItem::redo(app, None)?,
+                        &PredefinedMenuItem::separator(app)?,
+                        &PredefinedMenuItem::cut(app, None)?,
+                        &PredefinedMenuItem::copy(app, None)?,
+                        &PredefinedMenuItem::paste(app, None)?,
+                        &PredefinedMenuItem::select_all(app, None)?,
+                    ],
+                )?;
+                
+                // View menu
+                let view_menu = Submenu::with_items(
+                    app,
+                    "显示",
+                    true,
+                    &[
+                        &PredefinedMenuItem::fullscreen(app, None)?,
+                    ],
+                )?;
+                
+                // Window menu
+                let window_menu = Submenu::with_items(
+                    app,
+                    "窗口",
+                    true,
+                    &[
+                        &PredefinedMenuItem::minimize(app, None)?,
+                        &PredefinedMenuItem::maximize(app, None)?,
+                    ],
+                )?;
+                
+                let menu = Menu::with_items(app, &[&app_menu, &edit_menu, &view_menu, &window_menu])?;
+                app.set_menu(menu)?;
+                
+                let app_handle = app.handle().clone();
+                app.on_menu_event(move |_app, event| {
+                    if event.id.0.as_str() == "settings" {
+                        let _ = app_handle.emit("menu-settings-click", ());
+                    }
+                });
+            }
+            
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             execute_action,
             extract_app_info,

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import { Sidebar } from './components/Sidebar';
 import { ActionList } from './components/ActionList';
 import { ActionFormModal } from './components/ActionFormModal';
@@ -29,6 +30,14 @@ function App() {
 
   useEffect(() => {
     initializeStore();
+    
+    const unlisten = listen<void>('menu-settings-click', () => {
+      setIsSettingsOpen(true);
+    });
+    
+    return () => {
+      unlisten.then((fn) => fn());
+    };
   }, [initializeStore]);
 
   const handleAddClick = () => {
