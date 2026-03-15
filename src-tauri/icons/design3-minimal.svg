@@ -1,0 +1,44 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Clean minimal design -->
+  <rect x="16" y="16" width="480" height="480" rx="64" ry="64" fill="#ffffff"/>
+  
+  <!-- Simple geometric click icon -->
+  <defs>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Main click button shape -->
+  <rect x="136" y="136" width="240" height="240" rx="48" ry="48" fill="url(#blueGradient)"/>
+  
+  <!-- Finger tap icon -->
+  <g transform="translate(0, 20)">
+    <!-- Hand/finger outline -->
+    <path d="M186 256
+             C186 226 216 206 246 206
+             L266 206
+             C296 206 306 236 306 256
+             L306 286
+             C306 306 286 326 266 326
+             L226 346
+             C206 356 186 336 186 316
+             Z" 
+          fill="none"
+          stroke="white"
+          stroke-width="8"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    
+    <!-- Tap point -->
+    <circle cx="246" cy="276" r="16" fill="white"/>
+  </g>
+  
+  <!-- Subtle border accent -->
+  <rect x="136" y="136" width="240" height="240" rx="48" ry="48" 
+        fill="none" 
+        stroke="#3b82f6" 
+        stroke-width="4"
+        opacity="0.3"/>
+</svg>

@@ -1,0 +1,37 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#4A90E2"/>
+  
+  <!-- Mouse pointer -->
+  <path d="M256 80
+           L376 280
+           L310 280
+           L340 400
+           L260 400
+           L230 280
+           L164 280
+           Z" 
+        fill="white"
+        stroke="#2C5D96"
+        stroke-width="8"/>
+  
+  <!-- Click ripple effect -->
+  <circle cx="320" cy="320" r="40" 
+          fill="none" 
+          stroke="white" 
+          stroke-width="6"
+          opacity="0.8"/>
+  <circle cx="320" cy="320" r="70" 
+          fill="none" 
+          stroke="white" 
+          stroke-width="4"
+          opacity="0.5"/>
+  <circle cx="320" cy="320" r="100" 
+          fill="none" 
+          stroke="white" 
+          stroke-width="2"
+          opacity="0.3"/>
+  
+  <!-- Small dot at pointer tip -->
+  <circle cx="320" cy="320" r="8" fill="#FF6B6B"/>
+</svg>

@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
-  "productName": "FastClickApp",
+  "productName": "ClickPad",
   "version": "0.1.0",
-  "identifier": "com.fastclick.app",
+  "identifier": "com.clickpad.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "FastClickApp",
+        "title": "ClickPad",
         "width": 1200,
         "height": 800,
         "minWidth": 800,

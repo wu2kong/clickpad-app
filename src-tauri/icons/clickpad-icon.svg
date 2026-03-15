@@ -1,0 +1,52 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Playful rounded design -->
+  <defs>
+    <linearGradient id="playfulGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f97316"/>
+      <stop offset="100%" style="stop-color:#fb923c"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Circular background -->
+  <circle cx="256" cy="256" r="240" fill="url(#playfulGradient)"/>
+  
+  <!-- Cute click character -->
+  <g transform="translate(0, 10)">
+    <!-- Main body - rounded cursor -->
+    <path d="M156 116
+             Q256 76 356 116
+             L306 266
+             L386 286
+             L246 426
+             L176 326
+             L216 316
+             Z" 
+          fill="white"/>
+    
+    <!-- Eyes -->
+    <circle cx="226" cy="186" r="16" fill="#1e1e2e"/>
+    <circle cx="286" cy="186" r="16" fill="#1e1e2e"/>
+    
+    <!-- Eye highlights -->
+    <circle cx="232" cy="182" r="5" fill="white"/>
+    <circle cx="292" cy="182" r="5" fill="white"/>
+    
+    <!-- Smile -->
+    <path d="M236 236 Q256 256 276 236" 
+          fill="none" 
+          stroke="#1e1e2e" 
+          stroke-width="6" 
+          stroke-linecap="round"/>
+  </g>
+  
+  <!-- Click effect sparkles -->
+  <g fill="white" opacity="0.8">
+    <circle cx="140" cy="150" r="8"/>
+    <circle cx="380" cy="130" r="6"/>
+    <circle cx="400" cy="200" r="5"/>
+    <circle cx="120" cy="220" r="7"/>
+  </g>
+  
+  <!-- Subtle shadow at bottom -->
+  <ellipse cx="256" cy="450" rx="120" ry="20" fill="#1e1e2e" opacity="0.2"/>
+</svg>

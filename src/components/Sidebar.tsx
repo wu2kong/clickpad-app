@@ -145,7 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick, onS
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <h2 className="app-title">FastClickApp</h2>
+        <h2 className="app-title">ClickPad</h2>
         <div className="header-actions">
           {onSettingsClick && (
             <button className="settings-btn" onClick={onSettingsClick} title="设置">

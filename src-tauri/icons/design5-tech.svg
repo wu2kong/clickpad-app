@@ -1,0 +1,49 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Professional tech design -->
+  <defs>
+    <linearGradient id="techGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#334155"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect x="16" y="16" width="480" height="480" rx="48" ry="48" fill="url(#techGradient)"/>
+  
+  <!-- Grid pattern overlay -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.1"/>
+  </pattern>
+  <rect x="16" y="16" width="480" height="480" rx="48" ry="48" fill="url(#grid)"/>
+  
+  <!-- Central click button -->
+  <g>
+    <!-- Outer ring -->
+    <circle cx="256" cy="256" r="140" fill="none" stroke="#3b82f6" stroke-width="3" opacity="0.5"/>
+    
+    <!-- Button -->
+    <circle cx="256" cy="256" r="90" fill="#3b82f6"/>
+    
+    <!-- Inner highlight -->
+    <circle cx="236" cy="236" r="30" fill="white" opacity="0.2"/>
+    
+    <!-- Click symbol -->
+    <g transform="translate(0, 5)">
+      <!-- Finger print tap -->
+      <path d="M226 266
+               C226 246 236 236 256 236
+               C276 236 286 246 286 266" 
+            fill="none" 
+            stroke="white" 
+            stroke-width="6" 
+            stroke-linecap="round"/>
+      
+      <!-- Tap point -->
+      <circle cx="256" cy="266" r="12" fill="white"/>
+    </g>
+  </g>
+  
+  <!-- Tech corner accents -->
+  <path d="M56 56 L96 56 L56 96 Z" fill="#3b82f6" opacity="0.6"/>
+  <path d="M456 456 L416 456 L456 416 Z" fill="#3b82f6" opacity="0.6"/>
+</svg>
