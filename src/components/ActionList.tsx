@@ -6,6 +6,7 @@ import {
 import { useAppStore } from '../stores/appStore';
 import type { ClickAction } from '../types';
 import { ExecuteModal } from './ExecuteModal';
+import { convertFileSrc } from '@tauri-apps/api/core';
 import {
   DndContext,
   closestCenter,
@@ -28,11 +29,29 @@ interface ActionListProps {
   onEdit: (action: ClickAction) => void;
 }
 
-const getActionIcon = (type: string) => {
-  switch (type) {
-    case 'open_app': return <ExternalLink size={16} />;
-    case 'execute_script': return <Terminal size={16} />;
-    default: return <Play size={16} />;
+const getActionIcon = (action: ClickAction, size: number = 16) => {
+  if (action.icon) {
+    if (action.icon.type === 'emoji') {
+      return <span style={{ fontSize: size }}>{action.icon.value}</span>;
+    }
+    if (action.icon.type === 'image') {
+      const imgSrc = action.icon.value.startsWith('/') 
+        ? convertFileSrc(action.icon.value) 
+        : action.icon.value;
+      return (
+        <img 
+          src={imgSrc} 
+          alt="" 
+          style={{ width: size, height: size, objectFit: 'contain' }}
+        />
+      );
+    }
+  }
+  
+  switch (action.action.type) {
+    case 'open_app': return <ExternalLink size={size} />;
+    case 'execute_script': return <Terminal size={size} />;
+    default: return <Play size={size} />;
   }
 };
 
@@ -75,7 +94,7 @@ const SortableActionCard: React.FC<SortableActionCardProps> = ({
           <GripVertical size={16} />
         </div>
         <div className="icon-wrapper">
-          {getActionIcon(action.action.type)}
+          {getActionIcon(action)}
         </div>
         <div className="card-content">
           <div className="card-title-row">
@@ -215,7 +234,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
         {...listeners}
       >
         <div className="gallery-icon">
-          {getActionIcon(action.action.type)}
+          {getActionIcon(action, 24)}
         </div>
         <div className="gallery-name">{action.name}</div>
       </div>
@@ -318,7 +337,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
       <div key={action.id} className="action-card">
         <div className="card-header">
           <div className="icon-wrapper">
-            {getActionIcon(action.action.type)}
+            {getActionIcon(action)}
           </div>
           <div className="card-content">
             <div className="card-title-row">

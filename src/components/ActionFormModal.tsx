@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
-import type { ClickAction } from '../types';
+import type { ClickAction, ActionIcon } from '../types';
 
 interface ActionFormModalProps {
   isOpen: boolean;
@@ -20,7 +20,8 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
     name: string;
     actionType: 'open_app' | 'execute_script' | 'other';
     actionValue: string;
-    icon: string;
+    iconType: 'emoji' | 'image';
+    iconValue: string;
     categoryId: string;
     tagIds: string[];
     description: string;
@@ -31,7 +32,8 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
     name: '',
     actionType: 'open_app',
     actionValue: '',
-    icon: '',
+    iconType: 'emoji',
+    iconValue: '',
     categoryId: categories[0]?.id || '',
     tagIds: [],
     description: '',
@@ -42,11 +44,14 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
 
   useEffect(() => {
     if (editAction) {
+      const iconType = editAction.icon?.type || 'emoji';
+      const iconValue = editAction.icon?.value || '';
       setFormData({
         name: editAction.name,
         actionType: editAction.action.type,
         actionValue: editAction.action.value,
-        icon: editAction.icon || '',
+        iconType: iconType as 'emoji' | 'image',
+        iconValue: iconValue,
         categoryId: editAction.categoryId,
         tagIds: editAction.tagIds,
         description: editAction.description,
@@ -59,7 +64,8 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
         name: '',
         actionType: 'open_app',
         actionValue: '',
-        icon: '',
+        iconType: 'emoji',
+        iconValue: '',
         categoryId: categories[0]?.id || '',
         tagIds: [],
         description: '',
@@ -73,13 +79,17 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    const icon: ActionIcon | null = formData.iconValue 
+      ? { type: formData.iconType, value: formData.iconValue }
+      : null;
+
     const actionData = {
       name: formData.name,
       action: {
         type: formData.actionType,
         value: formData.actionValue,
       },
-      icon: formData.icon || null,
+      icon: icon,
       categoryId: formData.categoryId,
       tagIds: formData.tagIds,
       description: formData.description,
@@ -177,12 +187,23 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
             </div>
             <div className="form-group flex-1">
               <label>图标（可选）</label>
-              <input
-                type="text"
-                value={formData.icon}
-                onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                placeholder="emoji 或图标名称"
-              />
+              <div className="icon-input-group">
+                <select
+                  value={formData.iconType}
+                  onChange={(e) => setFormData({ ...formData, iconType: e.target.value as 'emoji' | 'image' })}
+                  className="icon-type-select"
+                >
+                  <option value="emoji">Emoji</option>
+                  <option value="image">图片</option>
+                </select>
+                <input
+                  type="text"
+                  value={formData.iconValue}
+                  onChange={(e) => setFormData({ ...formData, iconValue: e.target.value })}
+                  placeholder={formData.iconType === 'emoji' ? '输入 emoji' : '图片路径'}
+                  className="icon-value-input"
+                />
+              </div>
             </div>
           </div>
 
@@ -353,6 +374,17 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
         textarea {
           resize: vertical;
           font-family: inherit;
+        }
+        .icon-input-group {
+          display: flex;
+          gap: 8px;
+        }
+        .icon-type-select {
+          width: 100px;
+          flex-shrink: 0;
+        }
+        .icon-value-input {
+          flex: 1;
         }
         .tags-selector {
           display: flex;

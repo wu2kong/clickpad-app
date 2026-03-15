@@ -7,6 +7,11 @@ export interface ScriptExecutionParams {
   timeoutMs?: number;
 }
 
+export interface ActionIcon {
+  type: 'emoji' | 'image';
+  value: string;
+}
+
 export interface ClickAction {
   id: string;
   name: string;
@@ -15,7 +20,7 @@ export interface ClickAction {
     value: string;
     params?: ScriptExecutionParams;
   };
-  icon?: string | null;
+  icon?: ActionIcon | null;
   categoryId: string;
   tagIds: string[];
   description: string;
