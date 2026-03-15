@@ -1,11 +1,19 @@
 export type ClickActionType = 'app' | 'script' | 'action';
 
+export interface ScriptExecutionParams {
+  args?: string[];
+  env?: Record<string, string>;
+  workingDir?: string;
+  timeoutMs?: number;
+}
+
 export interface ClickAction {
   id: string;
   name: string;
   action: {
     type: 'open_app' | 'execute_script' | 'other';
     value: string;
+    params?: ScriptExecutionParams;
   };
   icon?: string | null;
   categoryId: string;
@@ -18,6 +26,12 @@ export interface ClickAction {
   updatedAt: number;
   executionCount: number;
   order: number;
+}
+
+export interface ExecuteResult {
+  success: boolean;
+  message: string;
+  output?: string;
 }
 
 export interface Category {

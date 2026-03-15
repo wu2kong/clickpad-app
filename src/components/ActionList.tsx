@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import type { ClickAction } from '../types';
+import { ExecuteModal } from './ExecuteModal';
 import {
   DndContext,
   closestCenter,
@@ -253,6 +254,11 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
     action: null,
   });
 
+  const [executeModal, setExecuteModal] = useState<{ isOpen: boolean; action: ClickAction | null }>({
+    isOpen: false,
+    action: null,
+  });
+
   const filteredActions = getFilteredActions();
   const canDragSort = !selectedCategoryId && !selectedTagId;
 
@@ -279,8 +285,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
   };
 
   const handleExecute = (action: ClickAction) => {
-    incrementExecutionCount(action.id);
-    console.log('Executing:', action.action);
+    setExecuteModal({ isOpen: true, action });
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -488,6 +493,17 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
           </div>
         </div>
       )}
+
+      <ExecuteModal
+        isOpen={executeModal.isOpen}
+        action={executeModal.action}
+        onClose={() => setExecuteModal({ isOpen: false, action: null })}
+        onSuccess={() => {
+          if (executeModal.action) {
+            incrementExecutionCount(executeModal.action.id);
+          }
+        }}
+      />
 
       <style>{`
         .action-list-container {
