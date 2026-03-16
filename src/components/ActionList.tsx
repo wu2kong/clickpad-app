@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   LayoutGrid, List, Search, Play, 
-  Edit2, Trash2, ExternalLink, Terminal, AlertTriangle, GripVertical, LayoutPanelLeft
+  Edit2, Trash2, ExternalLink, Terminal, AlertTriangle, GripVertical, LayoutPanelLeft,
+  ArrowDownUp, ArrowUpDown, ArrowDownAZ, ArrowUpZA, Clock, ArrowDownWideNarrow, ArrowUpWideNarrow
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
-import type { ClickAction } from '../types';
+import type { ClickAction, SortField } from '../types';
 import { ExecuteModal } from './ExecuteModal';
 import { readFile } from '@tauri-apps/plugin-fs';
 import {
@@ -313,8 +314,12 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
   const {
     viewMode,
     searchQuery,
+    sortField,
+    sortOrder,
     setViewMode,
     setSearchQuery,
+    setSortField,
+    setSortOrder,
     getFilteredActions,
     categories,
     tags,
@@ -325,18 +330,33 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
     reorderActions,
   } = useAppStore();
 
-  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; action: ClickAction | null }>({
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: false; action: ClickAction | null } | { isOpen: true; action: ClickAction }>({
     isOpen: false,
     action: null,
   });
 
-  const [executeModal, setExecuteModal] = useState<{ isOpen: boolean; action: ClickAction | null }>({
+  const [executeModal, setExecuteModal] = useState<{ isOpen: false; action: ClickAction | null } | { isOpen: true; action: ClickAction }>({
     isOpen: false,
     action: null,
   });
+
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sortMenuRef.current && !sortMenuRef.current.contains(e.target as Node)) {
+        setShowSortMenu(false);
+      }
+    };
+    if (showSortMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showSortMenu]);
 
   const filteredActions = getFilteredActions();
-  const canDragSort = !selectedCategoryId && !selectedTagId;
+  const canDragSort = !selectedCategoryId && !selectedTagId && sortField === 'custom';
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -374,6 +394,26 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
       reorderActions(oldIndex, newIndex);
     }
   };
+
+  const getSortIcon = (field: SortField, order: 'asc' | 'desc', size: number = 18) => {
+    if (field === 'custom') {
+      return order === 'asc' ? <ArrowUpDown size={size} /> : <ArrowDownUp size={size} />;
+    } else if (field === 'name') {
+      return order === 'asc' ? <ArrowDownAZ size={size} /> : <ArrowUpZA size={size} />;
+    } else if (field === 'category') {
+      return order === 'asc' ? <ArrowDownWideNarrow size={size} /> : <ArrowUpWideNarrow size={size} />;
+    } else {
+      return order === 'asc' ? <Clock size={size} /> : <Clock size={size} />;
+    }
+  };
+
+  const sortFieldOptions: { field: SortField; label: string }[] = [
+    { field: 'custom', label: '自定义' },
+    { field: 'createdAt', label: '添加时间' },
+    { field: 'updatedAt', label: '更新时间' },
+    { field: 'category', label: '类别' },
+    { field: 'name', label: '名称' },
+  ];
 
   const renderActionCard = (action: ClickAction) => {
     if (canDragSort) {
@@ -515,25 +555,68 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="view-toggle">
-          <button
-            className={viewMode === 'list' ? 'active' : ''}
-            onClick={() => setViewMode('list')}
-          >
-            <List size={18} />
-          </button>
-          <button
-            className={viewMode === 'grid' ? 'active' : ''}
-            onClick={() => setViewMode('grid')}
-          >
-            <LayoutPanelLeft size={18} />
-          </button>
-          <button
-            className={viewMode === 'gallery' ? 'active' : ''}
-            onClick={() => setViewMode('gallery')}
-          >
-            <LayoutGrid size={18} />
-          </button>
+        <div className="toolbar-right">
+          <div className="sort-control" ref={sortMenuRef}>
+            <button
+              className="sort-toggle-btn"
+              onClick={() => setShowSortMenu(!showSortMenu)}
+              title={`${sortFieldOptions.find(o => o.field === sortField)?.label} - ${sortOrder === 'asc' ? '升序' : '降序'}`}
+            >
+              {getSortIcon(sortField, sortOrder)}
+            </button>
+            {showSortMenu && (
+              <div className="sort-menu">
+                <div className="sort-menu-header">
+                  <span>排序方式</span>
+                </div>
+                {sortFieldOptions.map((option) => (
+                  <button
+                    key={option.field}
+                    className={`sort-menu-item ${sortField === option.field ? 'active' : ''}`}
+                    onClick={() => {
+                      if (sortField === option.field) {
+                        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                      } else {
+                        setSortField(option.field);
+                      }
+                      setShowSortMenu(false);
+                    }}
+                  >
+                    <div className="sort-menu-item-content">
+                      {getSortIcon(option.field, 'asc', 16)}
+                      <span>{option.label}</span>
+                    </div>
+                    {sortField === option.field && (
+                      <span className="check-icon">✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="view-toggle">
+            <button
+              className={viewMode === 'list' ? 'active' : ''}
+              onClick={() => setViewMode('list')}
+              title="列表视图"
+            >
+              <List size={18} />
+            </button>
+            <button
+              className={viewMode === 'grid' ? 'active' : ''}
+              onClick={() => setViewMode('grid')}
+              title="网格视图"
+            >
+              <LayoutPanelLeft size={18} />
+            </button>
+            <button
+              className={viewMode === 'gallery' ? 'active' : ''}
+              onClick={() => setViewMode('gallery')}
+              title="画廊视图"
+            >
+              <LayoutGrid size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -588,13 +671,131 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
           flex-direction: column;
           background: #f9fafb;
         }
-        .toolbar {
+.toolbar {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 16px 24px;
           background: #ffffff;
           border-bottom: 1px solid #e5e7eb;
+        }
+        .toolbar-right {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .search-box {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: #f3f4f6;
+          padding: 8px 14px;
+          border-radius: 8px;
+          width: 320px;
+          color: #6b7280;
+        }
+        .search-box input {
+          border: none;
+          background: transparent;
+          outline: none;
+          font-size: 14px;
+          width: 100%;
+          color: #374151;
+        }
+        .sort-control {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        .sort-toggle-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          border-radius: 4px;
+          color: #6b7280;
+          transition: all 0.15s;
+        }
+        .sort-toggle-btn:hover {
+          background: #f3f4f6;
+          color: #374151;
+        }
+        .sort-menu {
+          position: absolute;
+          top: calc(100% + 8px);
+          right: 0;
+          background: #ffffff;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          padding: 4px 0;
+          min-width: 160px;
+          z-index: 1000;
+        }
+        .sort-menu-header {
+          padding: 8px 12px;
+          font-size: 11px;
+          color: #9ca3af;
+          text-transform: uppercase;
+          font-weight: 500;
+        }
+        .sort-menu-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          padding: 8px 12px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          font-size: 13px;
+          color: #374151;
+          transition: all 0.15s;
+        }
+        .sort-menu-item:hover {
+          background: #f3f4f6;
+        }
+        .sort-menu-item.active {
+          background: #eff6ff;
+          color: #2563eb;
+        }
+        .sort-menu-item-content {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .check-icon {
+          color: #2563eb;
+          font-weight: 600;
+        }
+        .view-toggle {
+          display: flex;
+          gap: 4px;
+          background: #f3f4f6;
+          padding: 4px;
+          border-radius: 6px;
+        }
+        .view-toggle button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          border-radius: 4px;
+          color: #6b7280;
+          transition: all 0.15s;
+        }
+        .view-toggle button.active {
+          background: #ffffff;
+          color: #2563eb;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .view-toggle button:hover:not(.active) {
+          color: #374151;
         }
         .search-box {
           display: flex;
@@ -694,6 +895,97 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit }) => {
         }
         .sortable-action-card:active {
           cursor: grabbing;
+        }
+        .sort-control {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        .sort-select-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 12px;
+          background: #f3f4f6;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 13px;
+          color: #374151;
+          transition: all 0.15s;
+        }
+        .sort-select-btn:hover {
+          background: #e5e7eb;
+          border-color: #d1d5db;
+        }
+        .sort-select-btn svg {
+          color: #6b7280;
+        }
+        .sort-menu {
+          position: absolute;
+          top: calc(100% + 4px);
+          left: 0;
+          background: #ffffff;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          padding: 4px 0;
+          min-width: 160px;
+          z-index: 1000;
+        }
+        .sort-menu-header {
+          padding: 8px 12px;
+          font-size: 11px;
+          color: #9ca3af;
+          text-transform: uppercase;
+          font-weight: 500;
+        }
+        .sort-menu-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          padding: 8px 12px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          font-size: 13px;
+          color: #374151;
+          transition: all 0.15s;
+        }
+        .sort-menu-item:hover {
+          background: #f3f4f6;
+        }
+        .sort-menu-item.active {
+          background: #eff6ff;
+          color: #2563eb;
+        }
+        .check-icon {
+          color: #2563eb;
+          font-weight: 600;
+        }
+        .sort-menu-divider {
+          height: 1px;
+          background: #e5e7eb;
+          margin: 4px 0;
+        }
+        .sort-order-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+          padding: 8px 12px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          font-size: 13px;
+          color: #374151;
+          transition: all 0.15s;
+        }
+        .sort-order-btn:hover {
+          background: #f3f4f6;
+        }
+        .sort-order-btn svg {
+          color: #6b7280;
         }
         .drag-handle {
           display: flex;

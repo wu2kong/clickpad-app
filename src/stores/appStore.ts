@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ClickAction, Category, Tag, ViewMode } from '../types';
+import type { ClickAction, Category, Tag, ViewMode, SortField, SortOrder } from '../types';
 import { storage } from '../services/storage';
 import { invoke } from '@tauri-apps/api/core';
 
@@ -11,6 +11,8 @@ interface AppState {
   selectedTagId: string | null;
   viewMode: ViewMode;
   searchQuery: string;
+  sortField: SortField;
+  sortOrder: SortOrder;
   sidebarCollapsed: boolean;
   isLoading: boolean;
   isInitialized: boolean;
@@ -38,6 +40,8 @@ interface AppState {
   setSelectedTag: (id: string | null) => void;
   setViewMode: (mode: ViewMode) => void;
   setSearchQuery: (query: string) => void;
+  setSortField: (field: SortField) => void;
+  setSortOrder: (order: SortOrder) => void;
   toggleSidebar: () => void;
   
   getFilteredActions: () => ClickAction[];
@@ -67,6 +71,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   selectedCategoryId: null,
   selectedTagId: null,
   viewMode: 'grid',
+  sortField: 'custom',
+  sortOrder: 'asc',
   searchQuery: '',
   sidebarCollapsed: false,
   isLoading: false,
@@ -271,13 +277,23 @@ export const useAppStore = create<AppState>((set, get) => ({
     setTimeout(() => get().saveToStorage(), 0);
   },
   
+  setSortField: (field) => {
+    set({ sortField: field });
+    setTimeout(() => get().saveToStorage(), 0);
+  },
+  
+  setSortOrder: (order) => {
+    set({ sortOrder: order });
+    setTimeout(() => get().saveToStorage(), 0);
+  },
+  
   toggleSidebar: () => {
     set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }));
     setTimeout(() => get().saveToStorage(), 0);
   },
 
   getFilteredActions: () => {
-    const { clickActions, selectedCategoryId, selectedTagId, searchQuery } = get();
+    const { clickActions, selectedCategoryId, selectedTagId, searchQuery, sortField, sortOrder } = get();
     const filtered = clickActions.filter((action) => {
       if (selectedCategoryId && action.categoryId !== selectedCategoryId) return false;
       if (selectedTagId && !action.tagIds.includes(selectedTagId)) return false;
@@ -290,7 +306,37 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
       return true;
     });
-    return filtered.sort((a, b) => a.order - b.order);
+
+    const sorted = [...filtered].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortField) {
+        case 'custom':
+          comparison = a.order - b.order;
+          break;
+        case 'createdAt':
+          comparison = a.createdAt - b.createdAt;
+          break;
+        case 'updatedAt':
+          comparison = a.updatedAt - b.updatedAt;
+          break;
+        case 'category': {
+          const categoryA = get().categories.find(c => c.id === a.categoryId);
+          const categoryB = get().categories.find(c => c.id === b.categoryId);
+          comparison = (categoryA?.name || '').localeCompare(categoryB?.name || '');
+          break;
+        }
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        default:
+          comparison = a.order - b.order;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+    
+    return sorted;
   },
   
   getTagStats: (tagId) => {
@@ -339,6 +385,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         selectedCategoryId: appConfig.selectedCategoryId,
         selectedTagId: appConfig.selectedTagId,
         searchQuery: appConfig.searchQuery,
+        sortField: appConfig.sortField || 'custom',
+        sortOrder: appConfig.sortOrder || 'asc',
         isInitialized: true,
       });
       
@@ -366,6 +414,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           selectedCategoryId: state.selectedCategoryId,
           selectedTagId: state.selectedTagId,
           searchQuery: state.searchQuery,
+          sortField: state.sortField,
+          sortOrder: state.sortOrder,
         },
         state.categories,
         state.tags,

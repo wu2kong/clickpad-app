@@ -60,6 +60,10 @@ export interface Tag {
 
 export type ViewMode = 'list' | 'grid' | 'gallery';
 
+export type SortField = 'custom' | 'createdAt' | 'updatedAt' | 'category' | 'name';
+
+export type SortOrder = 'asc' | 'desc';
+
 export interface FilterState {
   selectedCategoryId: string | null;
   selectedTagId: string | null;

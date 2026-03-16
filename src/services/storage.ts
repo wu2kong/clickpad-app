@@ -1,5 +1,5 @@
 import { BaseDirectory, exists, mkdir, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
-import type { ClickAction, Category, Tag, ViewMode } from '../types';
+import type { ClickAction, Category, Tag, ViewMode, SortField, SortOrder } from '../types';
 import type { AppSettings } from '../types/settings';
 import { defaultSettings } from '../types/settings';
 
@@ -19,6 +19,8 @@ export interface AppConfig {
   selectedCategoryId: string | null;
   selectedTagId: string | null;
   searchQuery: string;
+  sortField?: SortField;
+  sortOrder?: SortOrder;
 }
 
 export interface UserData {
