@@ -3,7 +3,7 @@ import type { ClickAction, Category, Tag, ViewMode } from '../types';
 import type { AppSettings } from '../types/settings';
 import { defaultSettings } from '../types/settings';
 
-const CONFIG_DIR = '.fastclick';
+const CONFIG_DIR = '.clickpad';
 
 const FILES = {
   app: 'app.json',

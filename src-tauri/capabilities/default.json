@@ -16,10 +16,10 @@
       "identifier": "fs:scope",
       "allow": [
         {
-          "path": "$HOME/.fastclick/**"
+          "path": "$HOME/.clickpad/**"
         },
         {
-          "path": "$HOME/.fastclick"
+          "path": "$HOME/.clickpad"
         }
       ]
     },

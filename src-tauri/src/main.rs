@@ -267,7 +267,7 @@ fn find_and_extract_icon(app_path: &str, icon_name: &str) -> Result<Option<Strin
 fn save_icon_to_file(icon_data: &[u8], app_path: &str) -> Result<Option<String>, String> {
     let icons_dir = dirs::home_dir()
         .ok_or("无法获取主目录")?
-        .join(".fastclick")
+        .join(".clickpad")
         .join("app-icons");
 
     fs::create_dir_all(&icons_dir).map_err(|e| format!("创建图标目录失败: {}", e))?;
@@ -323,7 +323,7 @@ async fn save_app_icon(icon_data: String, action_id: String) -> Result<String, S
 
     let icons_dir = dirs::home_dir()
         .ok_or("无法获取主目录")?
-        .join(".fastclick")
+        .join(".clickpad")
         .join("app-icons");
 
     fs::create_dir_all(&icons_dir).map_err(|e| format!("创建图标目录失败: {}", e))?;

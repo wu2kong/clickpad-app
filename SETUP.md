@@ -2,7 +2,7 @@
 
 ## 项目结构
 
-项目已创建在 `fastclick-app/` 目录下，包含完整的 Tauri + React 项目结构。
+项目已创建在 `clickpad-app/` 目录下，包含完整的 Tauri + React 项目结构。
 
 ### 已完成的工作：
 
@@ -72,7 +72,7 @@ cargo --version
 
 ```bash
 # 在项目目录下
-cd fastclick-app
+cd clickpad-app
 
 # 安装 Tauri CLI
 cargo install tauri-cli

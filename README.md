@@ -57,7 +57,7 @@ npm run tauri-build
 ## 项目结构
 
 ```
-fastclick-app/
+clickpad-app/
 ├── src/                    # 前端源代码
 │   ├── components/         # React 组件
 │   ├── stores/            # Zustand 状态管理
@@ -86,9 +86,9 @@ fastclick <name>
 ## 数据存储
 
 默认使用 JSON 文件存储数据，位置：
-- macOS: `~/Library/Application Support/com.fastclick.app/data.json`
-- Windows: `%APPDATA%/com.fastclick.app/data.json`
-- Linux: `~/.config/com.fastclick.app/data.json`
+- macOS: `~/Library/Application Support/com.clickpad.app/data.json`
+- Windows: `%APPDATA%/com.clickpad.app/data.json`
+- Linux: `~/.config/com.clickpad.app/data.json`
 
 ## 许可证
 
