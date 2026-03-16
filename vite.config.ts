@@ -1,7 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-const host = process.env.TAURI_DEV_HOST;
+// @ts-ignore 找不到名称“process”，但运行时由 Node.js 提供
+const host = (process as any).env.TAURI_DEV_HOST;
 
 export default defineConfig(async () => ({
   plugins: [react()],
