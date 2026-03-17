@@ -297,6 +297,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick, onS
           border-right: none;
           display: flex;
           flex-direction: column;
+          border-top-right-radius: 12px;
         }
         .sidebar-collapsed {
           width: 48px;

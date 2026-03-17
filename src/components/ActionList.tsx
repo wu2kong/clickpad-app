@@ -149,35 +149,35 @@ const SortableActionCard: React.FC<SortableActionCardProps> = ({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="action-card sortable-action-card">
+    <div ref={setNodeRef} style={style} className="action-card sortable-action-card" onClick={() => onExecute(action)}>
       <div className="card-header">
-        <div className="drag-handle" {...attributes} {...listeners}>
+        <div className="drag-handle" {...attributes} {...listeners} onClick={(e) => e.stopPropagation()}>
           <GripVertical size={16} />
         </div>
         <div className="icon-wrapper">
           {getActionIcon(action)}
         </div>
         <div className="card-content">
-          <div className="card-title-row">
+          <div className="card-title-row" onClick={(e) => e.stopPropagation()}>
             <h3>{action.name}</h3>
             <div className="card-actions">
               <button
                 className="execute-btn"
-                onClick={() => onExecute(action)}
+                onClick={(e) => { e.stopPropagation(); onExecute(action); }}
                 title="执行"
               >
                 <Play size={16} />
               </button>
               <button
                 className="edit-btn"
-                onClick={() => onEdit(action)}
+                onClick={(e) => { e.stopPropagation(); onEdit(action); }}
                 title="编辑"
               >
                 <Edit2 size={16} />
               </button>
               <button
                 className="delete-btn"
-                onClick={() => onDelete(action)}
+                onClick={(e) => { e.stopPropagation(); onDelete(action); }}
                 title="删除"
               >
                 <Trash2 size={16} />
@@ -436,32 +436,32 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
     }
 
     return (
-      <div key={action.id} className="action-card">
+      <div key={action.id} className="action-card" onClick={() => handleExecute(action)}>
         <div className="card-header">
           <div className="icon-wrapper">
             {getActionIcon(action)}
           </div>
           <div className="card-content">
-            <div className="card-title-row">
+            <div className="card-title-row" onClick={(e) => e.stopPropagation()}>
               <h3>{action.name}</h3>
               <div className="card-actions">
                 <button
                   className="execute-btn"
-                  onClick={() => handleExecute(action)}
+                  onClick={(e) => { e.stopPropagation(); handleExecute(action); }}
                   title="执行"
                 >
                   <Play size={16} />
                 </button>
                 <button
                   className="edit-btn"
-                  onClick={() => onEdit(action)}
+                  onClick={(e) => { e.stopPropagation(); onEdit(action); }}
                   title="编辑"
                 >
                   <Edit2 size={16} />
                 </button>
                 <button
                   className="delete-btn"
-                  onClick={() => setDeleteConfirm({ isOpen: true, action })}
+                  onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ isOpen: true, action }); }}
                   title="删除"
                 >
                   <Trash2 size={16} />
@@ -745,7 +745,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
           align-items: center;
           gap: 10px;
           background: var(--bg-tertiary);
-          padding: 8px 14px;
+          padding: 12px 14px;
           border-radius: 8px;
           flex: 1;
           max-width: 400px;
@@ -896,16 +896,17 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
           padding: 12px;
           border: 1px solid var(--border-primary);
           transition: all 0.15s;
+          cursor: pointer;
         }
         .action-card:hover {
           border-color: var(--border-secondary);
           box-shadow: var(--shadow-md);
         }
         .sortable-action-card {
-          cursor: grab;
+          cursor: pointer;
         }
         .sortable-action-card:active {
-          cursor: grabbing;
+          cursor: pointer;
         }
         .drag-handle {
           display: flex;
@@ -939,7 +940,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
           justify-content: center;
           color: var(--accent-primary);
           flex-shrink: 0;
-          padding: 6px;
+          padding: 9px;
         }
         .card-content {
           flex: 1;
@@ -1107,7 +1108,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
         .gallery-card {
           background: var(--bg-primary);
           border-radius: 10px;
-          padding: 16px 12px;
+          padding: 14px 12px;
           border: 1px solid var(--border-primary);
           display: flex;
           flex-direction: column;
@@ -1115,7 +1116,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
           gap: 8px;
           cursor: pointer;
           transition: all 0.15s;
-          min-height: 100px;
+          // min-height: 100px;
         }
         .gallery-card:hover {
           border-color: var(--border-secondary);
