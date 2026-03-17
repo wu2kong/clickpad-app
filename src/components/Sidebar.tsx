@@ -293,16 +293,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick, onS
         .sidebar {
           width: 260px;
           height: 100%;
-          background: var(--bg-primary);
-          border-right: 1px solid var(--border-primary);
+          background: var(--bg-secondary);
+          border-right: none;
           display: flex;
           flex-direction: column;
         }
         .sidebar-collapsed {
           width: 48px;
           height: 100%;
-          background: var(--bg-primary);
-          border-right: 1px solid var(--border-primary);
+          background: var(--bg-secondary);
+          border-right: none;
           display: flex;
           align-items: flex-start;
           justify-content: center;
@@ -313,7 +313,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick, onS
           align-items: center;
           justify-content: space-between;
           padding: 16px;
-          border-bottom: 1px solid var(--border-primary);
+          // border-bottom: 1px solid var(--border-primary);
         }
         .header-actions {
           display: flex;
@@ -479,7 +479,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick, onS
         }
         .sidebar-footer {
           padding: 16px;
-          border-top: 1px solid var(--border-primary);
+          border-top: none;
         }
         .add-btn {
           width: 100%;

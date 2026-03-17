@@ -693,7 +693,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
           flex: 1;
           display: flex;
           flex-direction: column;
-          background: var(--bg-secondary);
+          background: var(--bg-primary);
         }
 .toolbar {
           display: flex;
@@ -701,7 +701,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
           justify-content: space-between;
           padding: 16px 24px;
           background: var(--bg-primary);
-          border-bottom: 1px solid var(--border-primary);
+          border-bottom: none;
           gap: 16px;
         }
         .toolbar-left {
