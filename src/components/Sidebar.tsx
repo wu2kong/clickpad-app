@@ -73,6 +73,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick, onS
   } = useAppStore();
 
   const [expandedTags, setExpandedTags] = useState<Set<string>>(new Set());
+  const [categoriesExpanded, setCategoriesExpanded] = useState(true);
+  const [tagsSectionExpanded, setTagsSectionExpanded] = useState(true);
   const tagHierarchy = getTagHierarchy();
   const allTags = tags;
 
@@ -161,9 +163,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick, onS
       <div className="sidebar-content">
         {/* Categories Section */}
         <div className="section">
-          <div className="section-header">
+          <div 
+            className="section-header clickable"
+            onClick={() => setCategoriesExpanded(!categoriesExpanded)}
+          >
             <Folder size={16} />
             <span>类别</span>
+            <span className="section-expand-icon">
+              {categoriesExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </span>
             {onManageClick && (
               <button
                 className="manage-btn"
@@ -177,6 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick, onS
               </button>
             )}
           </div>
+          {categoriesExpanded && (
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -212,13 +221,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick, onS
               </div>
             </SortableContext>
           </DndContext>
+          )}
         </div>
 
         {/* Tags Section */}
         <div className="section">
-          <div className="section-header">
+          <div 
+            className="section-header clickable"
+            onClick={() => setTagsSectionExpanded(!tagsSectionExpanded)}
+          >
             <Tag size={16} />
             <span>标签</span>
+            <span className="section-expand-icon">
+              {tagsSectionExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </span>
             {onManageClick && (
               <button
                 className="manage-btn"
@@ -232,6 +248,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick, onS
               </button>
             )}
           </div>
+          {tagsSectionExpanded && (
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -279,6 +296,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick, onS
               </div>
             </SortableContext>
           </DndContext>
+          )}
         </div>
       </div>
 
@@ -369,6 +387,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddClick, onManageClick, onS
           color: var(--text-tertiary);
           text-transform: uppercase;
           position: relative;
+        }
+        .section-header.clickable {
+          cursor: pointer;
+          border-radius: 6px;
+          transition: background 0.15s;
+        }
+        .section-header.clickable:hover {
+          background: var(--bg-tertiary);
+        }
+        .section-expand-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-left: -5px;
         }
         .manage-btn {
           margin-left: auto;
