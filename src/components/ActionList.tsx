@@ -5,9 +5,11 @@ import {
   ArrowDownUp, ArrowUpDown, ArrowDownAZ, ArrowUpZA, ArrowDownWideNarrow, ArrowUpWideNarrow,
   Menu, Settings, Plus, ChevronDown, ChevronUp, CheckSquare, Square, FolderOpen, Tag, MousePointerClick,
   CalendarArrowDown, CalendarArrowUp,
-  ClockArrowDown, ClockArrowUp
+  ClockArrowDown, ClockArrowUp,
+  Sun, Moon
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
+import { useSettingsStore } from '../stores/settingsStore';
 import type { ClickAction, SortField } from '../types';
 import { ExecuteModal } from './ExecuteModal';
 import { readFile } from '@tauri-apps/plugin-fs';
@@ -383,7 +385,22 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
     batchDeleteActions,
     batchUpdateCategory,
     batchAddTags,
-  } = useAppStore();
+} = useAppStore();
+
+  const theme = useSettingsStore((state) => state.settings.general.theme);
+  const setTheme = useSettingsStore((state) => state.setTheme);
+
+  const getCurrentTheme = (): 'light' | 'dark' => {
+    if (theme === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return theme;
+  };
+
+  const toggleTheme = () => {
+    const currentTheme = getCurrentTheme();
+    setTheme(currentTheme === 'light' ? 'dark' : 'light');
+  };
 
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: false; action: ClickAction | null } | { isOpen: true; action: ClickAction }>({
     isOpen: false,
@@ -791,6 +808,13 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
               <button className="batch-action-btn cancel" onClick={() => setBatchMode(false)}>取消</button>
             </div>
           )}
+          <button
+            className="toolbar-icon-btn theme-toggle-btn"
+            onClick={toggleTheme}
+            title={getCurrentTheme() === 'light' ? '切换到深色模式' : '切换到浅色模式'}
+          >
+            {getCurrentTheme() === 'light' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
         </div>
       </div>
 
