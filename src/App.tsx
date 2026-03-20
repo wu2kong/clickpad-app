@@ -75,8 +75,8 @@ function App() {
 
   const handleFromApp = async () => {
     try {
-      const selectedPath = await open({
-        multiple: false,
+      const selectedPaths = await open({
+        multiple: true,
         directory: false,
         filters: [
           {
@@ -87,13 +87,11 @@ function App() {
         defaultPath: '/Applications',
       });
 
-      if (!selectedPath) {
+      if (!selectedPaths) {
         return;
       }
 
-      const appInfo = await invoke<AppInfo>('extract_app_info', {
-        appPath: selectedPath,
-      });
+      const paths = Array.isArray(selectedPaths) ? selectedPaths : [selectedPaths];
 
       const categories = useAppStore.getState().categories;
       let launchCategoryId = categories.find(c => c.name === '打开应用')?.id;
@@ -108,24 +106,26 @@ function App() {
         launchCategoryId = useAppStore.getState().categories.find(c => c.name === '打开应用')?.id || '';
       }
 
-      const newAction = {
-        name: `打开 ${appInfo.name}`,
-        action: {
-          type: 'open_app' as const,
-          value: appInfo.app_path,
-        },
-        icon: appInfo.icon_path 
-          ? { type: 'image' as const, value: appInfo.icon_path }
-          : null,
-        categoryId: launchCategoryId,
-        tagIds: [],
-        description: `启动 ${appInfo.name}`,
-        displayInGallery: true,
-        displayInMenu: true,
-        displayInCLI: true,
-      };
-
-      useAppStore.getState().addClickAction(newAction);
+      for (const appPath of paths) {
+        const appInfo = await invoke<AppInfo>('extract_app_info', { appPath });
+        const newAction = {
+          name: `打开 ${appInfo.name}`,
+          action: {
+            type: 'open_app' as const,
+            value: appInfo.app_path,
+          },
+          icon: appInfo.icon_path 
+            ? { type: 'image' as const, value: appInfo.icon_path }
+            : null,
+          categoryId: launchCategoryId,
+          tagIds: [],
+          description: `启动 ${appInfo.name}`,
+          displayInGallery: true,
+          displayInMenu: true,
+          displayInCLI: true,
+        };
+        useAppStore.getState().addClickAction(newAction);
+      }
     } catch (error) {
       console.error('Failed to add app:', error);
       alert(`添加应用失败: ${error}`);
@@ -134,16 +134,19 @@ function App() {
 
   const handleFromFile = async () => {
     try {
-      const selectedPath = await open({
-        multiple: false,
+      const selectedPaths = await open({
+        multiple: true,
         directory: false,
       });
 
-      if (!selectedPath) {
+      if (!selectedPaths) {
         return;
       }
 
-      handleFromFileWithPath(selectedPath as string);
+      const paths = Array.isArray(selectedPaths) ? selectedPaths : [selectedPaths];
+      for (const path of paths) {
+        await handleFromFileWithPath(path as string);
+      }
     } catch (error) {
       console.error('Failed to select file:', error);
       alert(`选择文件失败: ${error}`);
@@ -228,16 +231,19 @@ function App() {
 
   const handleFromDirectory = async () => {
     try {
-      const selectedPath = await open({
-        multiple: false,
+      const selectedPaths = await open({
+        multiple: true,
         directory: true,
       });
 
-      if (!selectedPath) {
+      if (!selectedPaths) {
         return;
       }
 
-      handleFromDirectoryWithPath(selectedPath as string);
+      const paths = Array.isArray(selectedPaths) ? selectedPaths : [selectedPaths];
+      for (const path of paths) {
+        await handleFromDirectoryWithPath(path as string);
+      }
     } catch (error) {
       console.error('Failed to select directory:', error);
       alert(`选择目录失败: ${error}`);

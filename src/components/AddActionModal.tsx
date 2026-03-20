@@ -138,7 +138,7 @@ export const AddActionModal: React.FC<AddActionModalProps> = ({
               </div>
               <div className="option-content">
                 <h3>从应用选择</h3>
-                <p>自动提取应用信息和图标</p>
+                <p>自动提取应用信息和图标（支持多选）</p>
               </div>
             </button>
 
@@ -148,7 +148,7 @@ export const AddActionModal: React.FC<AddActionModalProps> = ({
               </div>
               <div className="option-content">
                 <h3>添加文件</h3>
-                <p>选择或输入文件路径</p>
+                <p>选择或输入文件路径（支持多选）</p>
               </div>
             </button>
 
@@ -158,7 +158,7 @@ export const AddActionModal: React.FC<AddActionModalProps> = ({
               </div>
               <div className="option-content">
                 <h3>添加目录</h3>
-                <p>选择或输入目录路径</p>
+                <p>选择或输入目录路径（支持多选）</p>
               </div>
             </button>
 
@@ -192,7 +192,7 @@ export const AddActionModal: React.FC<AddActionModalProps> = ({
               </div>
               <div className="option-content">
                 <h3>从文件选择器选择</h3>
-                <p>使用系统文件选择器<br />按快捷键Cmd+Shift+.可切换显示隐藏文件</p>
+                <p>使用系统文件选择器（支持多选）<br />按快捷键Cmd+Shift+.可切换显示隐藏文件</p>
               </div>
             </button>
 
@@ -235,7 +235,7 @@ export const AddActionModal: React.FC<AddActionModalProps> = ({
               </div>
               <div className="option-content">
                 <h3>从目录选择器选择</h3>
-                <p>使用系统目录选择器<br />按快捷键Cmd+Shift+.可切换显示隐藏目录</p>
+                <p>使用系统目录选择器（支持多选）<br />按快捷键Cmd+Shift+.可切换显示隐藏目录</p>
               </div>
             </button>
 
