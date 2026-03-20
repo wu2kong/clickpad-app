@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Loader2, CheckCircle, XCircle, Copy, Check, Terminal, ExternalLink, FileText, FolderOpen, Globe } from 'lucide-react';
+import { X, Loader2, CheckCircle, XCircle, Copy, Check, Terminal, ExternalLink, FileText, FolderOpen, Globe, Maximize2, Minimize2 } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import type { ClickAction, ExecuteResult } from '../types';
 
@@ -19,6 +19,7 @@ export const ExecuteModal: React.FC<ExecuteModalProps> = ({
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'display'>('loading');
   const [result, setResult] = useState<ExecuteResult | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !action) {
@@ -151,16 +152,26 @@ export const ExecuteModal: React.FC<ExecuteModalProps> = ({
               </div>
             </div>
             {result?.output && (
-              <div className="output-section">
+              <div className={`output-section ${isFullscreen ? 'fullscreen' : ''}`}>
                 <div className="section-label">输出结果</div>
                 <div className="output-code">
                   <pre>{result.output}</pre>
-                  <button 
-                    className="copy-btn"
-                    onClick={() => copyToClipboard(result.output!, 'output')}
-                  >
-                    {copiedField === 'output' ? <Check size={14} /> : <Copy size={14} />}
-                  </button>
+                  <div className="output-actions">
+                    <button 
+                      className="copy-btn"
+                      onClick={() => copyToClipboard(result.output!, 'output')}
+                      title="复制"
+                    >
+                      {copiedField === 'output' ? <Check size={14} /> : <Copy size={14} />}
+                    </button>
+                    <button 
+                      className="copy-btn"
+                      onClick={() => setIsFullscreen(!isFullscreen)}
+                      title={isFullscreen ? '退出全屏' : '全屏'}
+                    >
+                      {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -367,6 +378,34 @@ export const ExecuteModal: React.FC<ExecuteModalProps> = ({
           .output-code pre {
             max-height: 200px;
             overflow-y: auto;
+            line-height: 0.9;
+          }
+          .output-code .output-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-shrink: 0;
+          }
+          .output-section.fullscreen {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            z-index: 3000;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+          }
+          .output-section.fullscreen .output-code {
+            flex: 1;
+            min-height: 0;
+          }
+          .output-section.fullscreen .output-code pre {
+            max-height: none;
+            flex: 1;
           }
           .info-content p {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
