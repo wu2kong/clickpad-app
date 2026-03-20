@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
@@ -10,6 +10,7 @@ import { CategoryTagManager } from './components/CategoryTagManager';
 import { Settings } from './components/Settings';
 import { useAppStore } from './stores/appStore';
 import { useTheme } from './hooks/useTheme';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import type { ClickAction } from './types';
 import { storage } from './services/storage';
 
@@ -27,10 +28,29 @@ function App() {
   const [isManagerOpen, setIsManagerOpen] = useState(false);
   const [managerTab, setManagerTab] = useState<'categories' | 'tags'>('categories');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   
   const initializeStore = useAppStore((state) => state.initializeStore);
   const isLoading = useAppStore((state) => state.isLoading);
   const sidebarCollapsed = useAppStore((state) => state.sidebarCollapsed);
+
+  useKeyboardShortcuts({
+    onSearch: () => {
+      if (!isSettingsOpen && !isAddModalOpen && !isFormModalOpen && !isManagerOpen) {
+        searchInputRef.current?.focus();
+      }
+    },
+    onNewAction: () => {
+      if (!isSettingsOpen && !isAddModalOpen && !isFormModalOpen && !isManagerOpen) {
+        setIsAddModalOpen(true);
+      }
+    },
+    onOpenSettings: () => {
+      if (!isSettingsOpen && !isAddModalOpen && !isFormModalOpen && !isManagerOpen) {
+        setIsSettingsOpen(true);
+      }
+    },
+  });
 
   useEffect(() => {
     initializeStore();
@@ -359,7 +379,7 @@ function App() {
   return (
     <div className="app">
       {!sidebarCollapsed && <Sidebar onAddClick={handleAddClick} onManageClick={handleManageClick} onSettingsClick={handleSettingsClick} />}
-      <ActionList onEdit={handleEdit} onAddClick={handleAddClick} onSettingsClick={handleSettingsClick} />
+      <ActionList onEdit={handleEdit} onAddClick={handleAddClick} onSettingsClick={handleSettingsClick} searchInputRef={searchInputRef} />
       <AddActionModal
         isOpen={isAddModalOpen}
         onClose={handleCloseAddModal}

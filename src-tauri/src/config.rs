@@ -61,25 +61,25 @@ pub fn load_actions() -> Vec<ClickAction> {
     }
 }
 
-pub fn load_settings() -> bool {
+pub fn load_settings() -> AppSettingsData {
     let path = get_config_dir().join("settings.json");
     match fs::read_to_string(&path) {
         Ok(content) => match serde_json::from_str::<AppSettingsData>(&content) {
             Ok(settings) => {
                 eprintln!(
-                    "[Config] minimizeToTray = {}",
-                    settings.general.minimize_to_tray
+                    "[Config] minimizeToTray = {}, globalInvoke = {}",
+                    settings.general.minimize_to_tray, settings.shortcuts.global_invoke
                 );
-                settings.general.minimize_to_tray
+                settings
             }
             Err(e) => {
                 eprintln!("[Config] Failed to parse settings: {}", e);
-                false
+                AppSettingsData::default()
             }
         },
         Err(e) => {
             eprintln!("[Config] Failed to read settings file: {}", e);
-            false
+            AppSettingsData::default()
         }
     }
 }

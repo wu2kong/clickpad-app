@@ -8,6 +8,7 @@ interface SettingsState {
   settings: AppSettings;
   isLoading: boolean;
   isInitialized: boolean;
+  previousGlobalShortcut: string | null;
   
   initializeSettings: () => Promise<void>;
   updateGeneralSettings: (settings: Partial<GeneralSettings>) => void;
@@ -29,12 +30,33 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   settings: defaultSettings,
   isLoading: false,
   isInitialized: false,
+  previousGlobalShortcut: null,
 
   initializeSettings: async () => {
     set({ isLoading: true });
     try {
-      const settings = await storage.loadSettings();
-      set({ settings, isInitialized: true });
+      let settings = await storage.loadSettings();
+      // Ensure all settings objects exist with defaults
+      if (!settings.general) {
+        settings = { ...settings, general: defaultSettings.general };
+      } else {
+        settings.general = { ...defaultSettings.general, ...settings.general };
+      }
+      if (!settings.shortcuts) {
+        settings = { ...settings, shortcuts: defaultSettings.shortcuts };
+      } else {
+        settings.shortcuts = { ...defaultSettings.shortcuts, ...settings.shortcuts };
+      }
+      if (!settings.advanced) {
+        settings = { ...settings, advanced: defaultSettings.advanced };
+      } else {
+        settings.advanced = { ...defaultSettings.advanced, ...settings.advanced };
+      }
+      set({ 
+        settings, 
+        isInitialized: true,
+        previousGlobalShortcut: settings.shortcuts.globalInvoke 
+      });
       try {
         await invoke('set_minimize_to_tray', { enabled: settings.general.minimizeToTray });
         console.log('[Settings] Initialized minimizeToTray to', settings.general.minimizeToTray);
@@ -60,12 +82,30 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   },
 
   updateShortcutsSettings: (shortcutsSettings) => {
+    const prevShortcut = get().settings.shortcuts.globalInvoke;
+    
     set((state) => ({
       settings: {
         ...state.settings,
         shortcuts: { ...state.settings.shortcuts, ...shortcutsSettings },
       },
     }));
+    
+    if (shortcutsSettings.globalInvoke && shortcutsSettings.globalInvoke !== prevShortcut) {
+      setTimeout(async () => {
+        try {
+          await invoke('update_global_shortcut', { 
+            oldShortcut: prevShortcut || null,
+            newShortcut: shortcutsSettings.globalInvoke 
+          });
+          set({ previousGlobalShortcut: shortcutsSettings.globalInvoke });
+          console.log('[Settings] Updated global shortcut to', shortcutsSettings.globalInvoke);
+        } catch (e) {
+          console.error('[Settings] Failed to update global shortcut:', e);
+        }
+      }, 0);
+    }
+    
     setTimeout(() => get().saveSettings(), 0);
   },
 
@@ -76,7 +116,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         advanced: { ...state.settings.advanced, ...advancedSettings },
       },
     }));
-    setTimeout(() =>get().saveSettings(), 0);
+    setTimeout(() => get().saveSettings(), 0);
   },
 
   setTheme: (theme) => {
@@ -86,16 +126,17 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         general: { ...state.settings.general, theme },
       },
     }));
-    setTimeout(() =>get().saveSettings(), 0);
+    setTimeout(() => get().saveSettings(), 0);
   },
 
-  toggleAutoStart: () => {set((state) => ({
+  toggleAutoStart: () => {
+    set((state) => ({
       settings: {
         ...state.settings,
         general: {...state.settings.general, autoStart: !state.settings.general.autoStart },
       },
     }));
-    setTimeout(() =>get().saveSettings(), 0);
+    setTimeout(() => get().saveSettings(), 0);
   },
 
   toggleSilentStart: () => {
@@ -105,7 +146,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         general: { ...state.settings.general, silentStart: !state.settings.general.silentStart },
       },
     }));
-    setTimeout(() =>get().saveSettings(), 0);
+    setTimeout(() => get().saveSettings(), 0);
   },
 
   toggleMinimizeToTray: () => {
@@ -168,7 +209,24 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   },
 
   resetToDefaults: () => {
+    const prevShortcut = get().settings.shortcuts.globalInvoke;
     set({ settings: defaultSettings });
+    
+    if (defaultSettings.shortcuts.globalInvoke !== prevShortcut) {
+      setTimeout(async () => {
+        try {
+          await invoke('update_global_shortcut', { 
+            oldShortcut: prevShortcut || null,
+            newShortcut: defaultSettings.shortcuts.globalInvoke 
+          });
+          set({ previousGlobalShortcut: defaultSettings.shortcuts.globalInvoke });
+          console.log('[Settings] Reset global shortcut to default');
+        } catch (e) {
+          console.error('[Settings] Failed to reset global shortcut:', e);
+        }
+      }, 0);
+    }
+    
     setTimeout(() => get().saveSettings(), 0);
   },
 

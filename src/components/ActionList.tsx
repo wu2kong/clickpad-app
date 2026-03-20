@@ -35,6 +35,7 @@ interface ActionListProps {
   onEdit: (action: ClickAction) => void;
   onAddClick?: () => void;
   onSettingsClick?: () => void;
+  searchInputRef?: React.RefObject<HTMLInputElement>;
 }
 
 const iconCache = new Map<string, string>();
@@ -351,7 +352,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
   );
 };
 
-export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSettingsClick }) => {
+export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSettingsClick, searchInputRef }) => {
   const {
     viewMode,
     searchQuery,
@@ -711,6 +712,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
         <div className="search-box">
           <Search size={18} />
           <input
+            ref={searchInputRef}
             type="text"
             placeholder="搜索小程序..."
             value={searchQuery}

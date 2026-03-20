@@ -5,6 +5,7 @@ mod config;
 mod executor;
 mod app_info;
 mod tray;
+mod shortcut;
 
 use std::sync::Mutex;
 use std::sync::atomic::Ordering;
@@ -14,7 +15,9 @@ use tauri::menu::{Menu, MenuItem, Submenu, PredefinedMenuItem};
 use models::AppState;
 
 fn main() {
-    let minimize_to_tray = config::load_settings();
+    let settings = config::load_settings();
+    let minimize_to_tray = settings.general.minimize_to_tray;
+    let global_shortcut = settings.shortcuts.global_invoke.clone();
     
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
@@ -25,10 +28,11 @@ fn main() {
             tray: None,
             minimize_to_tray: std::sync::atomic::AtomicBool::new(minimize_to_tray),
         }))
-        .setup(|app| {
+        .setup(move |app| {
             setup_app_menu(app)?;
             setup_tray(app)?;
             setup_window_close_handler(app);
+            setup_global_shortcut(app, &global_shortcut)?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -38,6 +42,7 @@ fn main() {
             app_info::download_favicon,
             tray::refresh_tray_menu,
             tray::set_minimize_to_tray,
+            shortcut::update_global_shortcut,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -145,4 +150,13 @@ fn setup_window_close_handler(app: &tauri::App) {
             }
         }
     });
+}
+
+fn setup_global_shortcut(app: &tauri::App, shortcut: &str) -> Result<(), Box<dyn std::error::Error>> {
+    if !shortcut.is_empty() {
+        shortcut::register_global_shortcut(app.handle(), shortcut)
+            .map_err(|e| format!("Failed to register global shortcut: {}", e))?;
+        println!("[Main] Global shortcut registered: {}", shortcut);
+    }
+    Ok(())
 }

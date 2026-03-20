@@ -30,6 +30,19 @@ export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
   }, [initializeSettings]);
 
   const [editingShortcut, setEditingShortcut] = useState<string | null>(null);
+  const shortcutBtnRefs = React.useRef<Record<string, HTMLButtonElement | null>>({});
+
+  const formatShortcutForDisplay = (shortcut: string): string => {
+    if (!shortcut) return '未设置';
+    const isMac = navigator.platform.toUpperCase().includes('MAC');
+    return shortcut
+      .replace(/CommandOrControl/g, isMac ? '⌘' : 'Ctrl')
+      .replace(/\+/g, isMac ? '' : '+')
+      .replace(/Shift/g, isMac ? '⇧' : 'Shift')
+      .replace(/Alt/g, isMac ? '⌥' : 'Alt')
+      .replace(/Space/g, 'Space')
+      .replace(/Comma/g, ',');
+  };
 
   const handleShortcutKeydown = (e: React.KeyboardEvent, shortcutKey: keyof typeof settings.shortcuts) => {
     if (!editingShortcut || editingShortcut !== shortcutKey) return;
@@ -37,19 +50,74 @@ export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
     e.preventDefault();
     e.stopPropagation();
 
+    if (e.key === 'Escape') {
+      setEditingShortcut(null);
+      return;
+    }
+
+    // Delete or Backspace to clear shortcut
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      updateShortcutsSettings({ [shortcutKey]: '' });
+      setEditingShortcut(null);
+      return;
+    }
+
     const modifiers: string[] = [];
-    if (e.metaKey) modifiers.push('CommandOrControl');
-    if (e.ctrlKey) modifiers.push('CommandOrControl');
+    const isMac = navigator.platform.toUpperCase().includes('MAC');
+    
+    if (isMac) {
+      if (e.metaKey) modifiers.push('CommandOrControl');
+    } else {
+      if (e.ctrlKey) modifiers.push('CommandOrControl');
+    }
+    
     if (e.altKey) modifiers.push('Alt');
     if (e.shiftKey) modifiers.push('Shift');
 
-    const key = e.key === ' ' ? 'Space' : e.key.toUpperCase();
+    let key = e.key.toUpperCase();
+    if (e.key === ' ') key = 'Space';
+    if (e.key === ',') key = 'Comma';
     
-    if (modifiers.length > 0 && key.length === 1) {
+    // Allow single character keys or special keys
+    const validKeys = ['Space', 'Comma'];
+    const isValidKey = key.length === 1 || validKeys.includes(key) || /^F\d+$/.test(key);
+    
+    if (modifiers.length > 0 && isValidKey) {
       const shortcut = [...modifiers, key].join('+');
       updateShortcutsSettings({ [shortcutKey]: shortcut });
       setEditingShortcut(null);
     }
+  };
+
+  const handleShortcutButtonClick = (e: React.MouseEvent, shortcutKey: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (editingShortcut === shortcutKey) {
+      setEditingShortcut(null);
+    } else {
+      setEditingShortcut(shortcutKey);
+      setTimeout(() => {
+        const btn = shortcutBtnRefs.current[shortcutKey];
+        if (btn) {
+          btn.focus();
+        }
+      }, 0);
+    }
+  };
+
+  const handleShortcutButtonKeydown = (e: React.KeyboardEvent, shortcutKey: keyof typeof settings.shortcuts) => {
+    // When not in editing mode, Enter or Space starts editing
+    if (!editingShortcut || editingShortcut !== shortcutKey) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setEditingShortcut(shortcutKey);
+        return;
+      }
+      return;
+    }
+    
+    // In editing mode, handle the shortcut recording
+    handleShortcutKeydown(e, shortcutKey);
   };
 
   const handleBackupDirSelect = async () => {
@@ -175,11 +243,14 @@ export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
             <span className="setting-description">快速打开应用窗口</span>
           </div>
           <button
+            ref={(el) => { shortcutBtnRefs.current['globalInvoke'] = el; }}
+            tabIndex={0}
             className={`shortcut-btn ${editingShortcut === 'globalInvoke' ? 'editing' : ''}`}
-            onClick={() => setEditingShortcut('globalInvoke')}
-            onKeyDown={(e) => handleShortcutKeydown(e, 'globalInvoke')}
+            onClick={(e) => handleShortcutButtonClick(e, 'globalInvoke')}
+            onKeyDown={(e) => handleShortcutButtonKeydown(e, 'globalInvoke')}
+            onBlur={() => editingShortcut === 'globalInvoke' && setEditingShortcut(null)}
           >
-            {editingShortcut === 'globalInvoke' ? '按下快捷键...' : settings.shortcuts.globalInvoke}
+            {editingShortcut === 'globalInvoke' ? '按下快捷键（Delete 清除）...' : formatShortcutForDisplay(settings.shortcuts.globalInvoke)}
           </button>
         </div>
       </div>
@@ -192,11 +263,14 @@ export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
             <span className="setting-description">打开搜索框</span>
           </div>
           <button
+            ref={(el) => { shortcutBtnRefs.current['search'] = el; }}
+            tabIndex={0}
             className={`shortcut-btn ${editingShortcut === 'search' ? 'editing' : ''}`}
-            onClick={() => setEditingShortcut('search')}
-            onKeyDown={(e) => handleShortcutKeydown(e, 'search')}
+            onClick={(e) => handleShortcutButtonClick(e, 'search')}
+            onKeyDown={(e) => handleShortcutButtonKeydown(e, 'search')}
+            onBlur={() => editingShortcut === 'search' && setEditingShortcut(null)}
           >
-            {editingShortcut === 'search' ? '按下快捷键...' : settings.shortcuts.search}
+            {editingShortcut === 'search' ? '按下快捷键（Delete 清除）...' : formatShortcutForDisplay(settings.shortcuts.search)}
           </button>
         </div>
         <div className="setting-item">
@@ -205,24 +279,30 @@ export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
             <span className="setting-description">创建新的快速操作</span>
           </div>
           <button
+            ref={(el) => { shortcutBtnRefs.current['newAction'] = el; }}
+            tabIndex={0}
             className={`shortcut-btn ${editingShortcut === 'newAction' ? 'editing' : ''}`}
-            onClick={() => setEditingShortcut('newAction')}
-            onKeyDown={(e) => handleShortcutKeydown(e, 'newAction')}
+            onClick={(e) => handleShortcutButtonClick(e, 'newAction')}
+            onKeyDown={(e) => handleShortcutButtonKeydown(e, 'newAction')}
+            onBlur={() => editingShortcut === 'newAction' && setEditingShortcut(null)}
           >
-            {editingShortcut === 'newAction' ? '按下快捷键...' : settings.shortcuts.newAction}
+            {editingShortcut === 'newAction' ? '按下快捷键（Delete 清除）...' : formatShortcutForDisplay(settings.shortcuts.newAction)}
           </button>
         </div>
         <div className="setting-item">
           <div className="setting-info">
-            <span className="setting-label">编辑操作</span>
-            <span className="setting-description">编辑选中的操作</span>
+            <span className="setting-label">打开设置</span>
+            <span className="setting-description">快速打开设置界面</span>
           </div>
           <button
-            className={`shortcut-btn ${editingShortcut === 'editAction' ? 'editing' : ''}`}
-            onClick={() => setEditingShortcut('editAction')}
-            onKeyDown={(e) => handleShortcutKeydown(e, 'editAction')}
+            ref={(el) => { shortcutBtnRefs.current['openSettings'] = el; }}
+            tabIndex={0}
+            className={`shortcut-btn ${editingShortcut === 'openSettings' ? 'editing' : ''}`}
+            onClick={(e) => handleShortcutButtonClick(e, 'openSettings')}
+            onKeyDown={(e) => handleShortcutButtonKeydown(e, 'openSettings')}
+            onBlur={() => editingShortcut === 'openSettings' && setEditingShortcut(null)}
           >
-            {editingShortcut === 'editAction' ? '按下快捷键...' : settings.shortcuts.editAction}
+            {editingShortcut === 'openSettings' ? '按下快捷键（Delete 清除）...' : formatShortcutForDisplay(settings.shortcuts.openSettings)}
           </button>
         </div>
       </div>

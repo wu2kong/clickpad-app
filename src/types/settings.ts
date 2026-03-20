@@ -12,7 +12,7 @@ export interface ShortcutsSettings {
   globalInvoke: string;
   search: string;
   newAction: string;
-  editAction: string;
+  openSettings: string;
 }
 
 export interface AdvancedSettings {
@@ -39,7 +39,7 @@ export const defaultSettings: AppSettings = {
     globalInvoke: 'CommandOrControl+Shift+Space',
     search: 'CommandOrControl+F',
     newAction: 'CommandOrControl+N',
-    editAction: 'CommandOrControl+E',
+    openSettings: 'CommandOrControl+,',
   },
   advanced: {
     autoBackup: true,

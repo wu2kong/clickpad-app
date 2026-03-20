@@ -91,9 +91,30 @@ pub struct GeneralSettings {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ShortcutsSettings {
+    #[serde(default = "default_global_invoke")]
+    #[serde(rename = "globalInvoke")]
+    pub global_invoke: String,
+}
+
+fn default_global_invoke() -> String {
+    "CommandOrControl+Shift+Space".to_string()
+}
+
+impl Default for ShortcutsSettings {
+    fn default() -> Self {
+        Self {
+            global_invoke: default_global_invoke(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct AppSettingsData {
     #[serde(default)]
     pub general: GeneralSettings,
+    #[serde(default)]
+    pub shortcuts: ShortcutsSettings,
 }
 
 pub struct AppState {
