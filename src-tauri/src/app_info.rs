@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::fs;
 
 use crate::models::AppInfo;
-use crate::config::get_icons_dir;
+use crate::config::{get_icons_dir, get_site_icons_dir};
 
 #[tauri::command]
 pub async fn extract_app_info(app_path: String) -> Result<AppInfo, String> {
@@ -177,4 +177,48 @@ pub async fn save_app_icon(icon_data: String, action_id: String) -> Result<Strin
         .map_err(|e| format!("保存图标失败: {}", e))?;
 
     Ok(png_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub async fn download_favicon(domain: String) -> Result<String, String> {
+    let icons_dir = get_site_icons_dir();
+    fs::create_dir_all(&icons_dir).map_err(|e| format!("创建图标目录失败: {}", e))?;
+
+    let favicon_urls = vec![
+        format!("https://{}/favicon.ico", domain),
+        format!("https://{}/apple-touch-icon.png", domain),
+        format!("https://www.{}/favicon.ico", domain),
+    ];
+
+    for favicon_url in favicon_urls {
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(10))
+            .user_agent("Mozilla/5.0")
+            .build()
+            .map_err(|e| format!("创建HTTP客户端失败: {}", e))?;
+
+        let response = client.get(&favicon_url).send().await;
+        
+        if let Ok(resp) = response {
+            if resp.status().is_success() {
+                if let Ok(bytes) = resp.bytes().await {
+                    let png_path = icons_dir.join(format!("{}.png", domain));
+                    
+                    if let Ok(img) = image::load_from_memory(&bytes) {
+                        let resized = img.resize(128, 128, image::imageops::FilterType::Lanczos3);
+                        resized.save(&png_path).map_err(|e| format!("保存图标失败: {}", e))?;
+                        return Ok(png_path.to_string_lossy().to_string());
+                    } else {
+                        if let Ok(mut file) = fs::File::create(&png_path) {
+                            use std::io::Write;
+                            file.write_all(&bytes).map_err(|e| format!("写入文件失败: {}", e))?;
+                            return Ok(png_path.to_string_lossy().to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Err("无法下载网站图标".to_string())
 }

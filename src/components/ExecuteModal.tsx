@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Loader2, CheckCircle, XCircle, Copy, Check, Terminal, ExternalLink, FileText, FolderOpen } from 'lucide-react';
+import { X, Loader2, CheckCircle, XCircle, Copy, Check, Terminal, ExternalLink, FileText, FolderOpen, Globe } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import type { ClickAction, ExecuteResult } from '../types';
 
@@ -70,7 +70,27 @@ export const ExecuteModal: React.FC<ExecuteModalProps> = ({
 
   const isScript = action.action.type === 'execute_script';
   const isOther = action.action.type === 'other';
-  const isOpenAction = ['open_app', 'open_file', 'open_directory'].includes(action.action.type);
+  const isOpenAction = ['open_app', 'open_file', 'open_directory', 'open_url'].includes(action.action.type);
+  
+  const getLoadingMessage = () => {
+    switch (action.action.type) {
+      case 'open_app': return '正在打开应用...';
+      case 'open_file': return '正在打开文件...';
+      case 'open_directory': return '正在打开目录...';
+      case 'open_url': return '正在打开网址...';
+      default: return '正在执行...';
+    }
+  };
+  
+  const getSuccessMessage = () => {
+    switch (action.action.type) {
+      case 'open_app': return '应用已打开';
+      case 'open_file': return '文件已打开';
+      case 'open_directory': return '目录已打开';
+      case 'open_url': return '网址已打开';
+      default: return '执行成功';
+    }
+  };
 
   const getIcon = () => {
     switch (action.action.type) {
@@ -80,6 +100,8 @@ export const ExecuteModal: React.FC<ExecuteModalProps> = ({
         return <FileText size={20} />;
       case 'open_directory':
         return <FolderOpen size={20} />;
+      case 'open_url':
+        return <Globe size={20} />;
       case 'execute_script':
         return <Terminal size={20} />;
       default:
@@ -148,11 +170,7 @@ export const ExecuteModal: React.FC<ExecuteModalProps> = ({
         {isOpenAction && status === 'loading' && (
           <div className="modal-body loading">
             <Loader2 className="spinner" size={32} />
-            <p>
-              {action.action.type === 'open_app' && '正在打开应用...'}
-              {action.action.type === 'open_file' && '正在打开文件...'}
-              {action.action.type === 'open_directory' && '正在打开目录...'}
-            </p>
+            <p>{getLoadingMessage()}</p>
           </div>
         )}
 
@@ -160,11 +178,7 @@ export const ExecuteModal: React.FC<ExecuteModalProps> = ({
           <div className="modal-body result">
             <div className="status-indicator success">
               <CheckCircle size={24} />
-              <span>
-                {action.action.type === 'open_app' && '应用已打开'}
-                {action.action.type === 'open_file' && '文件已打开'}
-                {action.action.type === 'open_directory' && '目录已打开'}
-              </span>
+              <span>{getSuccessMessage()}</span>
             </div>
           </div>
         )}

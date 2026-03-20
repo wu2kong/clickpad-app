@@ -18,7 +18,7 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
   
   const [formData, setFormData] = useState<{
     name: string;
-    actionType: 'open_app' | 'open_file' | 'open_directory' | 'execute_script' | 'other';
+    actionType: 'open_app' | 'open_file' | 'open_directory' | 'open_url' | 'execute_script' | 'other';
     actionValue: string;
     iconType: 'emoji' | 'image';
     iconValue: string;
@@ -150,6 +150,7 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
                 <option value="open_app">打开应用程序</option>
                 <option value="open_file">打开文件</option>
                 <option value="open_directory">打开目录</option>
+                <option value="open_url">打开网址</option>
                 <option value="execute_script">执行脚本</option>
                 <option value="other">其他</option>
               </select>
@@ -159,6 +160,7 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
                 {formData.actionType === 'open_app' && '应用名称/路径 *'}
                 {formData.actionType === 'open_file' && '文件路径 *'}
                 {formData.actionType === 'open_directory' && '目录路径 *'}
+                {formData.actionType === 'open_url' && '网址 URL *'}
                 {formData.actionType === 'execute_script' && '脚本命令 *'}
                 {formData.actionType === 'other' && '动作值 *'}
               </label>
@@ -170,6 +172,7 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
                   formData.actionType === 'open_app' ? 'Visual Studio Code' :
                   formData.actionType === 'open_file' ? '/path/to/file.txt' :
                   formData.actionType === 'open_directory' ? '/path/to/folder' :
+                  formData.actionType === 'open_url' ? 'https://github.com' :
                   formData.actionType === 'execute_script' ? 'echo "Hello World"' :
                   '输入动作值'
                 }

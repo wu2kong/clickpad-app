@@ -35,6 +35,7 @@ fn main() {
             executor::execute_action,
             app_info::extract_app_info,
             app_info::save_app_icon,
+            app_info::download_favicon,
             tray::refresh_tray_menu,
             tray::set_minimize_to_tray,
         ])

@@ -1,4 +1,5 @@
 import { BaseDirectory, exists, mkdir, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+import { invoke } from '@tauri-apps/api/core';
 import type { ClickAction, Category, Tag, ViewMode, SortField, SortOrder } from '../types';
 import type { AppSettings } from '../types/settings';
 import { defaultSettings } from '../types/settings';
@@ -111,8 +112,25 @@ async function writeJsonFile<T>(filename: string, data: T): Promise<void> {
     throw error;
   }
 }
+async function ensureSiteIconsDir(): Promise<void> {
+  const dirExists = await exists(`${CONFIG_DIR}/site-icons`, { baseDir: BaseDirectory.Home });
+  if(!dirExists) {
+    await mkdir(`${CONFIG_DIR}/site-icons`, { baseDir: BaseDirectory.Home });
+  }
+}
 
 export const storage = {
+  async downloadFavicon(domain: string): Promise<string | null> {
+    try {
+      await ensureSiteIconsDir();
+      const localPath = await invoke<string>('download_favicon', { domain });
+      return localPath;
+    } catch (error) {
+      console.error('Failed to download favicon:', error);
+      return null;
+    }
+  },
+
   async loadAppConfig(): Promise<AppConfig> {
     return readJsonFile<AppConfig>(FILES.app, defaultAppConfig);
   },

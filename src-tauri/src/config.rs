@@ -87,3 +87,7 @@ pub fn load_settings() -> bool {
 pub fn get_icons_dir() -> PathBuf {
     get_config_dir().join("app-icons")
 }
+
+pub fn get_site_icons_dir() -> PathBuf {
+    get_config_dir().join("site-icons")
+}

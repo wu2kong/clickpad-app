@@ -11,6 +11,7 @@ import { Settings } from './components/Settings';
 import { useAppStore } from './stores/appStore';
 import { useTheme } from './hooks/useTheme';
 import type { ClickAction } from './types';
+import { storage } from './services/storage';
 
 interface AppInfo {
   name: string;
@@ -223,6 +224,76 @@ function App() {
     }
   };
 
+  const handleFromUrl = async (url: string) => {
+    try {
+      const urlObj = new URL(url);
+      const domain = urlObj.hostname.replace(/^www\./, '');
+      const nameParts = domain.split('.');
+      const name = nameParts.length > 1 ? nameParts[0] : domain;
+      const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
+
+      const categories = useAppStore.getState().categories;
+      let urlCategoryId = categories.find(c => c.name === '打开网址')?.id;
+      
+      if (!urlCategoryId) {
+        const newCategory = {
+          name: '打开网址',
+          description: '快速打开网页链接',
+          order: 2,
+        };
+        useAppStore.getState().addCategory(newCategory);
+        urlCategoryId = useAppStore.getState().categories.find(c => c.name === '打开网址')?.id || '';
+      }
+
+      let icon: { type: 'emoji' | 'image'; value: string } | null = null;
+      
+      try {
+        const localIconPath = await storage.downloadFavicon(domain);
+        if (localIconPath) {
+          icon = { type: 'image', value: localIconPath };
+        }
+      } catch {
+        // Favicon download failed, use emoji instead
+      }
+
+      if (!icon) {
+        const tldEmojiMap: Record<string, string> = {
+          '.com': '🌐',
+          // '.org': '🏛️',
+          // '.edu': '🎓',
+          // '.gov': '🏛️',
+          // '.net': '🌐',
+          // '.io': '💻',
+          // '.dev': '👨‍💻',
+          // '.app': '📱',
+          // '.co': '🏢',
+        };
+        const tld = domain.substring(domain.lastIndexOf('.'));
+        icon = { type: 'emoji', value: tldEmojiMap[tld] || '🔗' };
+      }
+
+      const newAction = {
+        name: capitalizedName,
+        action: {
+          type: 'open_url' as const,
+          value: url,
+        },
+        icon,
+        categoryId: urlCategoryId,
+        tagIds: [],
+        description: `打开 ${domain}`,
+        displayInGallery: true,
+        displayInMenu: true,
+        displayInCLI: true,
+      };
+
+      useAppStore.getState().addClickAction(newAction);
+    } catch (error) {
+      console.error('Failed to add URL:', error);
+      alert(`添加网址失败: ${error}`);
+    }
+  };
+
   const handleEdit = (action: ClickAction) => {
     setEditingAction(action);
     setIsFormModalOpen(true);
@@ -298,6 +369,7 @@ function App() {
         onFromDirectory={handleFromDirectory}
         onFromFileWithPath={handleFromFileWithPath}
         onFromDirectoryWithPath={handleFromDirectoryWithPath}
+        onFromUrl={handleFromUrl}
       />
       <ActionFormModal
         isOpen={isFormModalOpen}
