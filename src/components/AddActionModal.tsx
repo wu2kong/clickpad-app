@@ -132,16 +132,6 @@ export const AddActionModal: React.FC<AddActionModalProps> = ({
 
         {subMenu === null && (
           <div className="modal-body">
-            <button className="option-btn manual" onClick={handleManualCreate}>
-              <div className="option-icon">
-                <Edit3 size={24} />
-              </div>
-              <div className="option-content">
-                <h3>手动创建</h3>
-                <p>自定义名称、动作和参数</p>
-              </div>
-            </button>
-
             <button className="option-btn from-app" onClick={handleFromApp}>
               <div className="option-icon">
                 <Folder size={24} />
@@ -179,6 +169,16 @@ export const AddActionModal: React.FC<AddActionModalProps> = ({
               <div className="option-content">
                 <h3>添加网址</h3>
                 <p>快捷打开网页链接</p>
+              </div>
+            </button>
+
+            <button className="option-btn manual" onClick={handleManualCreate}>
+              <div className="option-icon">
+                <Edit3 size={24} />
+              </div>
+              <div className="option-content">
+                <h3>手动创建</h3>
+                <p>自定义名称、动作和参数</p>
               </div>
             </button>
           </div>

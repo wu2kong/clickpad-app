@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   LayoutGrid, List, Search, Play, 
   Edit2, Trash2, ExternalLink, Terminal, AlertTriangle, GripVertical, LayoutPanelLeft,
   ArrowDownUp, ArrowUpDown, ArrowDownAZ, ArrowUpZA, Clock, ArrowDownWideNarrow, ArrowUpWideNarrow,
-  Menu, Settings, Plus
+  Menu, Settings, Plus, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import type { ClickAction, SortField } from '../types';
@@ -333,6 +333,11 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
     reorderActions,
     sidebarCollapsed,
     toggleSidebar,
+    selectedFilterTagId,
+    setSelectedFilterTagId,
+    tagFilterExpanded,
+    setTagFilterExpanded,
+    clickActions,
   } = useAppStore();
 
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: false; action: ClickAction | null } | { isOpen: true; action: ClickAction }>({
@@ -362,6 +367,39 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
 
   const filteredActions = getFilteredActions();
   const canDragSort = !selectedCategoryId && !selectedTagId && sortField === 'custom';
+
+  const categoryTagStats = useMemo(() => {
+    if (!selectedCategoryId) return [];
+    
+    const categoryActions = clickActions.filter(a => a.categoryId === selectedCategoryId);
+    const tagCounts = new Map<string | 'none', number>();
+    
+    let noTagCount = 0;
+    categoryActions.forEach(action => {
+      if (action.tagIds.length === 0) {
+        noTagCount++;
+      } else {
+        action.tagIds.forEach(tagId => {
+          tagCounts.set(tagId, (tagCounts.get(tagId) || 0) + 1);
+        });
+      }
+    });
+    
+    const stats = Array.from(tagCounts.entries())
+      .map(([tagId, count]) => {
+        const tag = tags.find(t => t.id === tagId);
+        return tag ? { tagId, tagName: tag.name, count } : null;
+      })
+      .filter((item): item is { tagId: string; tagName: string; count: number } => item !== null)
+      .sort((a, b) => b.count - a.count);
+    
+    const totalCount = categoryActions.length;
+    const result = [{ tagId: null, tagName: '全部', count: totalCount }, ...stats];
+    if (noTagCount > 0) {
+      result.push({ tagId: 'none', tagName: '无标签', count: noTagCount });
+    }
+    return result;
+  }, [selectedCategoryId, clickActions, tags]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -641,8 +679,34 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
               <LayoutGrid size={18} />
             </button>
           </div>
+          {selectedCategoryId && categoryTagStats.length > 1 && (
+            <button
+              className="tag-filter-toggle-btn"
+              onClick={() => setTagFilterExpanded(!tagFilterExpanded)}
+              title={tagFilterExpanded ? '收起标签筛选' : '展开标签筛选'}
+            >
+              {tagFilterExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </button>
+          )}
         </div>
       </div>
+
+      {selectedCategoryId && tagFilterExpanded && categoryTagStats.length > 1 && (
+        <div className="tag-filter-bar">
+          <div className="tag-filter-container">
+            {categoryTagStats.map(({ tagId, tagName, count }) => (
+              <button
+                key={tagId || 'all'}
+                className={`tag-filter-item ${selectedFilterTagId === tagId ? 'active' : ''}`}
+                onClick={() => setSelectedFilterTagId(tagId)}
+              >
+                <span className="tag-name">{tagName}</span>
+                <span className="tag-count">{count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className={`content ${viewMode}`}>
         {renderContent()}
@@ -851,10 +915,77 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
           color: var(--accent-primary);
           box-shadow: var(--shadow-sm);
         }
-        .view-toggle button:hover:not(.active) {
-          color: var(--text-secondary);
-        }
-        .content {
+.view-toggle button:hover:not(.active) {
+           color: var(--text-muted);
+         }
+         .tag-filter-toggle-btn {
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           padding: 6px;
+           border: none;
+           background: transparent;
+           cursor: pointer;
+           border-radius: 4px;
+           color: var(--text-tertiary);
+           transition: all 0.15s;
+         }
+         .tag-filter-toggle-btn:hover {
+           background: var(--bg-tertiary);
+           color: var(--text-secondary);
+         }
+         .tag-filter-bar {
+           background: var(--bg-primary);
+           border-bottom: 1px solid var(--border-primary);
+           padding: 10px 24px;
+         }
+         .tag-filter-container {
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           gap: 8px;
+           flex-wrap: wrap;
+         }
+         .tag-filter-item {
+           display: flex;
+           align-items: center;
+           gap: 6px;
+           padding: 6px 12px;
+           background: var(--bg-tertiary);
+           border: 1px solid var(--border-primary);
+           border-radius: 16px;
+           font-size: 13px;
+           color: var(--text-muted);
+           cursor: pointer;
+           transition: all 0.15s;
+         }
+         .tag-filter-item:hover {
+           background: var(--bg-hover);
+           border-color: var(--border-secondary);
+         }
+         .tag-filter-item.active {
+           background: var(--bg-hover);
+           border-color: var(--border-secondary);
+         }
+         .tag-filter-item .tag-name {
+           font-weight: 500;
+         }
+         .tag-filter-item.active .tag-name {
+           font-weight: 600;
+           color: var(--text-tertiary);
+         }
+         .tag-filter-item .tag-count {
+           font-size: 11px;
+           padding: 2px 6px;
+           background: var(--bg-muted);
+           border-radius: 10px;
+           color: var(--text-muted);
+         }
+         .tag-filter-item.active .tag-count {
+           background: var(--bg-tertiary);
+           color: var(--text-tertiary);
+         }
+         .content {
           overflow-y: auto;
           padding: 24px;
         }

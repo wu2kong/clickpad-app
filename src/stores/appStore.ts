@@ -9,6 +9,8 @@ interface AppState {
   tags: Tag[];
   selectedCategoryId: string | null;
   selectedTagId: string | null;
+  selectedFilterTagId: string | null;
+  tagFilterExpanded: boolean;
   viewMode: ViewMode;
   searchQuery: string;
   sortField: SortField;
@@ -38,6 +40,8 @@ interface AppState {
   
   setSelectedCategory: (id: string | null) => void;
   setSelectedTag: (id: string | null) => void;
+  setSelectedFilterTagId: (id: string | null) => void;
+  setTagFilterExpanded: (expanded: boolean) => void;
   setViewMode: (mode: ViewMode) => void;
   setSearchQuery: (query: string) => void;
   setSortField: (field: SortField) => void;
@@ -70,6 +74,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   tags: [],
   selectedCategoryId: null,
   selectedTagId: null,
+  selectedFilterTagId: null,
+  tagFilterExpanded: true,
   viewMode: 'grid',
   sortField: 'custom',
   sortOrder: 'asc',
@@ -258,13 +264,21 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   setSelectedCategory: (id) => {
-    set({ selectedCategoryId: id, selectedTagId: null });
+    set({ selectedCategoryId: id, selectedTagId: null, selectedFilterTagId: null });
     setTimeout(() => get().saveToStorage(), 0);
   },
   
   setSelectedTag: (id) => {
     set({ selectedTagId: id, selectedCategoryId: null });
     setTimeout(() => get().saveToStorage(), 0);
+  },
+  
+  setSelectedFilterTagId: (id) => {
+    set({ selectedFilterTagId: id });
+  },
+  
+  setTagFilterExpanded: (expanded) => {
+    set({ tagFilterExpanded: expanded });
   },
   
   setViewMode: (mode) => {
@@ -293,10 +307,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   getFilteredActions: () => {
-    const { clickActions, selectedCategoryId, selectedTagId, searchQuery, sortField, sortOrder } = get();
+    const { clickActions, selectedCategoryId, selectedTagId, selectedFilterTagId, searchQuery, sortField, sortOrder } = get();
     const filtered = clickActions.filter((action) => {
       if (selectedCategoryId && action.categoryId !== selectedCategoryId) return false;
       if (selectedTagId && !action.tagIds.includes(selectedTagId)) return false;
+      if (selectedFilterTagId === 'none' && action.tagIds.length > 0) return false;
+      if (selectedFilterTagId && selectedFilterTagId !== 'none' && !action.tagIds.includes(selectedFilterTagId)) return false;
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return (
