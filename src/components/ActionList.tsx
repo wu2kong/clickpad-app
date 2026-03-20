@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   LayoutGrid, List, Search, Play, 
   Edit2, Trash2, ExternalLink, Terminal, AlertTriangle, GripVertical, LayoutPanelLeft,
-  ArrowDownUp, ArrowUpDown, ArrowDownAZ, ArrowUpZA, Clock, ArrowDownWideNarrow, ArrowUpWideNarrow,
-  Menu, Settings, Plus, ChevronDown, ChevronUp, CheckSquare, Square, FolderOpen, Tag
+  ArrowDownUp, ArrowUpDown, ArrowDownAZ, ArrowUpZA, ArrowDownWideNarrow, ArrowUpWideNarrow,
+  Menu, Settings, Plus, ChevronDown, ChevronUp, CheckSquare, Square, FolderOpen, Tag, MousePointerClick,
+  CalendarArrowDown, CalendarArrowUp,
+  ClockArrowDown, ClockArrowUp
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import type { ClickAction, SortField } from '../types';
@@ -497,8 +499,14 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
       return order === 'asc' ? <ArrowDownAZ size={size} /> : <ArrowUpZA size={size} />;
     } else if (field === 'category') {
       return order === 'asc' ? <ArrowDownWideNarrow size={size} /> : <ArrowUpWideNarrow size={size} />;
+    } else if (field === 'executionCount') {
+      return order === 'asc' ? <MousePointerClick size={size} /> : <MousePointerClick size={size} />;
+    } else if (field === 'createdAt') {
+      return order === 'asc' ? <CalendarArrowDown size={size} /> : <CalendarArrowUp size={size} />;
+    } else if (field === 'updatedAt') {
+      return order === 'asc' ? <ClockArrowDown size={size} /> : <ClockArrowUp size={size} />;
     } else {
-      return order === 'asc' ? <Clock size={size} /> : <Clock size={size} />;
+      return order === 'asc' ? <ArrowUpDown size={size} /> : <ArrowDownUp size={size} />;
     }
   };
 
@@ -508,6 +516,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
     { field: 'updatedAt', label: '更新时间' },
     { field: 'category', label: '类别' },
     { field: 'name', label: '名称' },
+    { field: 'executionCount', label: '执行次数' },
   ];
 
   const renderActionCard = (action: ClickAction) => {

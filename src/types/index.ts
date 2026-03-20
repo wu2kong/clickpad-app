@@ -60,7 +60,7 @@ export interface Tag {
 
 export type ViewMode = 'list' | 'grid' | 'gallery';
 
-export type SortField = 'custom' | 'createdAt' | 'updatedAt' | 'category' | 'name';
+export type SortField = 'custom' | 'createdAt' | 'updatedAt' | 'category' | 'name' | 'executionCount';
 
 export type SortOrder = 'asc' | 'desc';
 

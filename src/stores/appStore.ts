@@ -378,6 +378,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         case 'name':
           comparison = a.name.localeCompare(b.name);
           break;
+        case 'executionCount':
+          comparison = a.executionCount - b.executionCount;
+          break;
         default:
           comparison = a.order - b.order;
       }
