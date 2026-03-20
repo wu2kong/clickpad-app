@@ -698,6 +698,7 @@ export const ActionList: React.FC<ActionListProps> = ({ onEdit, onAddClick, onSe
             placeholder="搜索小程序..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            style={{padding: "unset"}}
           />
         </div>
         <div className="toolbar-right">

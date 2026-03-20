@@ -399,7 +399,6 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
         }
         input, select, textarea {
           width: 100%;
-          padding: 10px 12px;
           border: 1px solid var(--border-secondary);
           border-radius: 6px;
           font-size: 14px;
@@ -407,6 +406,10 @@ export const ActionFormModal: React.FC<ActionFormModalProps> = ({
           background: var(--bg-primary);
           transition: border-color 0.15s;
           box-sizing: border-box;
+          padding: 10px 12px;
+        }
+        .tag-input {
+          padding: 10px 12px;
         }
         input:focus, select:focus, textarea:focus {
           outline: none;
