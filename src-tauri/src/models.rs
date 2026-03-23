@@ -88,6 +88,24 @@ pub struct Category {
 pub struct GeneralSettings {
     #[serde(default, rename = "minimizeToTray")]
     pub minimize_to_tray: bool,
+    #[serde(
+        default = "default_preferred_text_editor",
+        rename = "preferredTextEditor"
+    )]
+    pub preferred_text_editor: String,
+    #[serde(
+        default = "default_preferred_markdown_editor",
+        rename = "preferredMarkdownEditor"
+    )]
+    pub preferred_markdown_editor: String,
+}
+
+fn default_preferred_text_editor() -> String {
+    "Visual Studio Code".to_string()
+}
+
+fn default_preferred_markdown_editor() -> String {
+    "Visual Studio Code".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -6,6 +6,8 @@ export interface GeneralSettings {
   silentStart: boolean;
   minimizeToTray: boolean;
   preferredTerminal: string;
+  preferredTextEditor: string;
+  preferredMarkdownEditor: string;
 }
 
 export interface ShortcutsSettings {
@@ -34,6 +36,8 @@ export const defaultSettings: AppSettings = {
     silentStart: false,
     minimizeToTray: false,
     preferredTerminal: 'Terminal',
+    preferredTextEditor: 'Visual Studio Code',
+    preferredMarkdownEditor: 'Visual Studio Code',
   },
   shortcuts: {
     globalInvoke: 'CommandOrControl+Shift+Space',

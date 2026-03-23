@@ -1,5 +1,6 @@
 use tauri_plugin_shell::ShellExt;
 use tauri::AppHandle;
+use std::path::Path;
 
 use crate::models::{ExecuteResult, ScriptParams};
 
@@ -11,8 +12,13 @@ pub async fn execute_action_by_id(app: &AppHandle, action_id: &str) -> Result<Ex
         .ok_or_else(|| format!("未找到操作: {}", action_id))?;
     
     match action.action_data.action_type.as_str() {
-        "open_app" | "open_file" | "open_directory" | "open_url" => {
-            execute_open_app(&action.action_data.value, app).await
+        "open_app" | "open_directory" | "open_url" => {
+            execute_open_app(&action.action_data.value, None, app).await
+        }
+        "open_file" => {
+            let settings = crate::config::load_settings();
+            let editor = get_editor_for_file(&action.action_data.value, &settings);
+            execute_open_app(&action.action_data.value, editor.as_deref(), app).await
         }
         "execute_script" => {
             execute_script(
@@ -25,6 +31,36 @@ pub async fn execute_action_by_id(app: &AppHandle, action_id: &str) -> Result<Ex
     }
 }
 
+fn get_editor_for_file(file_path: &str, settings: &crate::models::AppSettingsData) -> Option<String> {
+    let path = Path::new(file_path);
+    let extension = path.extension()?.to_str()?.to_lowercase();
+    
+    let markdown_extensions = ["md", "markdown", "mdown", "mkd", "mkdown", "mdwn"];
+    let text_extensions = [
+        "txt", "js", "ts", "jsx", "tsx", "json", "xml", "yaml", "yml", 
+        "html", "css", "scss", "sass", "less", "py", "rb", "java", "c", 
+        "cpp", "h", "hpp", "cs", "go", "rs", "php", "sh", "bash", "zsh",
+        "sql", "vue", "svelte", "astro", "config", "conf", "ini", "toml",
+        "profile", "zshrc", "bashrc", "bash_profile",
+    ];
+    
+    if markdown_extensions.contains(&extension.as_str()) {
+        if !settings.general.preferred_markdown_editor.is_empty() {
+            Some(settings.general.preferred_markdown_editor.clone())
+        } else {
+            None
+        }
+    } else if text_extensions.contains(&extension.as_str()) {
+        if !settings.general.preferred_text_editor.is_empty() {
+            Some(settings.general.preferred_text_editor.clone())
+        } else {
+            None
+        }
+    } else {
+        None
+    }
+}
+
 #[tauri::command]
 pub async fn execute_action(
     action_type: String,
@@ -33,24 +69,39 @@ pub async fn execute_action(
     app: AppHandle,
 ) -> Result<ExecuteResult, String> {
     match action_type.as_str() {
-        "open_app" | "open_file" | "open_directory" | "open_url" => {
-            execute_open_app(&action_value, &app).await
+        "open_app" | "open_directory" | "open_url" => {
+            execute_open_app(&action_value, None, &app).await
+        }
+        "open_file" => {
+            let settings = crate::config::load_settings();
+            let editor = get_editor_for_file(&action_value, &settings);
+            execute_open_app(&action_value, editor.as_deref(), &app).await
         }
         "execute_script" => execute_script(&action_value, params, &app).await,
         _ => Err(format!("未知操作类型: {}", action_type)),
     }
 }
 
-pub async fn execute_open_app(path: &str, app: &AppHandle) -> Result<ExecuteResult, String> {
+pub async fn execute_open_app(path: &str, editor: Option<&str>, app: &AppHandle) -> Result<ExecuteResult, String> {
     #[cfg(target_os = "macos")]
     {
-        let output = app
-            .shell()
-            .command("open")
-            .args([path])
-            .output()
-            .await
-            .map_err(|e| format!("打开应用失败: {}", e))?;
+        let output = if let Some(editor_name) = editor {
+            app
+                .shell()
+                .command("open")
+                .args(["-a", editor_name, path])
+                .output()
+                .await
+                .map_err(|e| format!("打开应用失败: {}", e))?
+        } else {
+            app
+                .shell()
+                .command("open")
+                .args([path])
+                .output()
+                .await
+                .map_err(|e| format!("打开应用失败: {}", e))?
+        };
 
         if output.status.success() {
             Ok(ExecuteResult {
@@ -65,13 +116,23 @@ pub async fn execute_open_app(path: &str, app: &AppHandle) -> Result<ExecuteResu
 
     #[cfg(target_os = "windows")]
     {
-        let output = app
-            .shell()
-            .command("cmd")
-            .args(["/C", "start", "", path])
-            .output()
-            .await
-            .map_err(|e| format!("打开应用失败: {}", e))?;
+        let output = if let Some(editor_name) = editor {
+            app
+                .shell()
+                .command("cmd")
+                .args(["/C", "start", "", editor_name, path])
+                .output()
+                .await
+                .map_err(|e| format!("打开应用失败: {}", e))?
+        } else {
+            app
+                .shell()
+                .command("cmd")
+                .args(["/C", "start", "", path])
+                .output()
+                .await
+                .map_err(|e| format!("打开应用失败: {}", e))?
+        };
 
         if output.status.success() {
             Ok(ExecuteResult {
@@ -86,13 +147,23 @@ pub async fn execute_open_app(path: &str, app: &AppHandle) -> Result<ExecuteResu
 
     #[cfg(target_os = "linux")]
     {
-        let output = app
-            .shell()
-            .command("xdg-open")
-            .args([path])
-            .output()
-            .await
-            .map_err(|e| format!("打开应用失败: {}", e))?;
+        let output = if let Some(editor_name) = editor {
+            app
+                .shell()
+                .command(editor_name)
+                .args([path])
+                .output()
+                .await
+                .map_err(|e| format!("打开应用失败: {}", e))?
+        } else {
+            app
+                .shell()
+                .command("xdg-open")
+                .args([path])
+                .output()
+                .await
+                .map_err(|e| format!("打开应用失败: {}", e))?
+        };
 
         if output.status.success() {
             Ok(ExecuteResult {

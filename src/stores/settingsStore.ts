@@ -19,6 +19,8 @@ interface SettingsState {
   toggleSilentStart: () => void;
   toggleMinimizeToTray: () => void;
   setPreferredTerminal: (terminal: string) => void;
+  setPreferredTextEditor: (editor: string) => void;
+  setPreferredMarkdownEditor: (editor: string) => void;
   toggleAutoBackup: () => void;
   setBackupDir: (dir: string) => void;
   toggleCloudSync: () => void;
@@ -173,6 +175,26 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       settings: {
         ...state.settings,
         general: { ...state.settings.general, preferredTerminal: terminal },
+      },
+    }));
+    setTimeout(() => get().saveSettings(), 0);
+  },
+
+  setPreferredTextEditor: (editor) => {
+    set((state) => ({
+      settings: {
+        ...state.settings,
+        general: { ...state.settings.general, preferredTextEditor: editor },
+      },
+    }));
+    setTimeout(() => get().saveSettings(), 0);
+  },
+
+  setPreferredMarkdownEditor: (editor) => {
+    set((state) => ({
+      settings: {
+        ...state.settings,
+        general: { ...state.settings.general, preferredMarkdownEditor: editor },
       },
     }));
     setTimeout(() => get().saveSettings(), 0);

@@ -19,6 +19,8 @@ export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
     toggleSilentStart,
     toggleMinimizeToTray,
     setPreferredTerminal,
+    setPreferredTextEditor,
+    setPreferredMarkdownEditor,
     toggleAutoBackup,
     setBackupDir,
     updateShortcutsSettings,
@@ -137,7 +139,8 @@ export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
     { value: 'system', label: '跟随系统', icon: <Monitor size={16} /> },
   ];
 
-  const terminalOptions = ['Terminal', 'iTerm2', 'Alacritty', 'Kitty', 'Hyper'];
+  const terminalOptions = ['iTerm', 'Terminal', 'XTerminal'];
+  const editorOptions = ['Visual Studio Code', 'Trae CN', 'Cursor', 'Sublime Text', 'Typora', 'TextEdit'];
 
   if (isLoading) {
     return (
@@ -226,6 +229,36 @@ export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
           >
             {terminalOptions.map((terminal) => (
               <option key={terminal} value={terminal}>{terminal}</option>
+            ))}
+          </select>
+        </div>
+        <div className="setting-item">
+          <div className="setting-info">
+            <span className="setting-label">首选文本编辑器</span>
+            <span className="setting-description">打开文本文件时使用的编辑器</span>
+          </div>
+          <select
+            className="setting-select"
+            value={settings.general.preferredTextEditor}
+            onChange={(e) => setPreferredTextEditor(e.target.value)}
+          >
+            {editorOptions.map((editor) => (
+              <option key={editor} value={editor}>{editor}</option>
+            ))}
+          </select>
+        </div>
+        <div className="setting-item">
+          <div className="setting-info">
+            <span className="setting-label">首选Markdown编辑器</span>
+            <span className="setting-description">打开Markdown文件时使用的编辑器</span>
+          </div>
+          <select
+            className="setting-select"
+            value={settings.general.preferredMarkdownEditor}
+            onChange={(e) => setPreferredMarkdownEditor(e.target.value)}
+          >
+            {editorOptions.map((editor) => (
+              <option key={editor} value={editor}>{editor}</option>
             ))}
           </select>
         </div>
