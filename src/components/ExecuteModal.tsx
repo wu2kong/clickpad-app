@@ -164,7 +164,15 @@ export const ExecuteModal: React.FC<ExecuteModalProps> = ({
             </div>
             {result?.output && (
               <div className={`output-section ${isFullscreen ? 'fullscreen' : ''}`}>
-                <div className="section-label">输出结果</div>
+                <div className="section-label">
+                  <span>输出结果</span>
+                  {isFullscreen && (
+                    <button className="fullscreen-close-btn" onClick={() => setIsFullscreen(false)}>
+                      <X size={16} />
+                      {/* <span>关闭</span> */}
+                    </button>
+                  )}
+                </div>
                 <div className="output-code">
                   <pre>{result.output}</pre>
                   <div className="output-actions">
@@ -367,6 +375,27 @@ export const ExecuteModal: React.FC<ExecuteModalProps> = ({
             font-weight: 500;
             color: var(--text-tertiary);
             margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+          .fullscreen-close-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+          }
+          .fullscreen-close-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
           }
           .script-code, .output-code, .info-content {
             display: flex;
@@ -409,6 +438,14 @@ export const ExecuteModal: React.FC<ExecuteModalProps> = ({
             padding: 20px;
             display: flex;
             flex-direction: column;
+            box-shadow: var(--shadow-lg);
+          }
+          .output-section.fullscreen .section-label {
+            flex-shrink: 0;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
           }
           .output-section.fullscreen .output-code {
             flex: 1;
